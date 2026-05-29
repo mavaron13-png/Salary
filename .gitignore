@@ -1,0 +1,27 @@
+# Variables de entorno (¡SECRETOS Y API KEYS!)
+.env
+
+# Entornos virtuales
+venv/
+env/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de MLflow (Bases de datos locales y modelos pesados)
+mlflow.db
+mlruns/
+xgboost_produccion.json
+
+# Datos pesados o crudos (¡Evita saturar GitHub y protege los datos del DANE!)
+DATA/
+RAW DATA/
+*.csv
+*.zip
+
+# Configuraciones del Editor/IDE (PyCharm / VS Code)
+.idea/
+.vscode/

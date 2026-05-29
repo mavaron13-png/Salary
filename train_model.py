@@ -6,81 +6,84 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-
-# 1. Generar Datos Sintéticos (Reemplazar luego con tu dataset del DANE/Kaggle)
-def load_data():
-    np.random.seed(42)
-    n_samples = 1000
-
-    # Features: Años de experiencia, Nivel educativo (1-5), Sector (1-10)
-    experiencia = np.random.randint(0, 20, n_samples)
-    educacion = np.random.randint(1, 6, n_samples)
-    sector = np.random.randint(1, 11, n_samples)
-
-    # Target: Sueldo base + variables (con un poco de ruido)
-    sueldo = 1500000 + (experiencia * 200000) + (educacion * 300000) + (sector * 50000) + np.random.normal(0, 200000,
-                                                                                                           n_samples)
-
-    X = pd.DataFrame({'experiencia': experiencia, 'educacion': educacion, 'sector': sector})
-    y = sueldo
-    return X, y
-
-
-# 2. Configurar MLflow
-mlflow.set_tracking_uri("http://localhost:5000")  # Asume que correrás el server localmente
+# 1. Configurar MLflow
+mlflow.set_tracking_uri("http://localhost:5000")  # Asegúrate de correr 'mlflow ui' en la terminal
 mlflow.set_experiment("Prediccion_Sueldos_Colombia")
 
 
+def prepare_real_data():
+    print("📥 Cargando dataset limpio...")
+    df = pd.read_csv(r"C:\Users\ma_va\Documents\Salary\DATA\dataset_modelo_limpio.csv")
+
+    # 2. Separar el Target (Y) de las Features (X)
+    y = df['salario_mensual']
+    X = df.drop(columns=['salario_mensual'])
+
+    # 3. One-Hot Encoding para las variables categóricas nominales
+    # Le decimos explícitamente a Pandas qué columnas son categorías, aunque tengan números
+    cat_cols = ['sexo', 'nivel_educativo', 'afiliado_salud', 'sector_economico', 'tipo_contrato', 'tamano_empresa']
+
+    print("🔠 Aplicando One-Hot Encoding a variables categóricas...")
+    X = pd.get_dummies(X, columns=cat_cols, drop_first=True)
+
+    return X, y
+
+
 def train_and_tune():
-    X, y = load_data()
+    X, y = prepare_real_data()
+
+    print("✂️ Separando en Train y Test...")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Convertir datos al formato nativo DMatrix de XGBoost (más rápido)
+    # Convertir datos al formato nativo DMatrix de XGBoost (optimizado para velocidad y memoria)
     dtrain = xgb.DMatrix(X_train, label=y_train)
     dtest = xgb.DMatrix(X_test, label=y_test)
 
-    # 3. Definir Hiperparámetros a probar (Tuning manual básico para el ejemplo)
+    # 4. Hiperparámetros base (Aquí es donde luego jugarás con MLflow para mejorar el modelo)
     params = {
         "objective": "reg:squarederror",
-        "learning_rate": 0.1,
-        "max_depth": 5,
+        "learning_rate": 0.05,
+        "max_depth": 6,
         "subsample": 0.8,
         "colsample_bytree": 0.8,
         "eval_metric": "rmse"
     }
+    n_estimators = 200
 
-    n_estimators = 100
-
-    # 4. Iniciar el run en MLflow
-    with mlflow.start_run(run_name="XGBoost_Base_Model"):
-        # Registrar hiperparámetros
+    print("🚀 Iniciando entrenamiento con MLflow...")
+    with mlflow.start_run(run_name="XGBoost_Real_Data_V1"):
         mlflow.log_params(params)
         mlflow.log_param("n_estimators", n_estimators)
 
-        # Entrenar el modelo
         evals = [(dtrain, "train"), (dtest, "validation")]
+
+        # Entrenar el modelo
         model = xgb.train(
             params=params,
             dtrain=dtrain,
             num_boost_round=n_estimators,
             evals=evals,
-            early_stopping_rounds=10,
-            verbose_eval=False
+            early_stopping_rounds=15,
+            verbose_eval=10  # Imprimirá el progreso cada 10 árboles
         )
 
         # 5. Predecir y calcular métricas
+        print("📊 Calculando métricas en el set de Test...")
         preds = model.predict(dtest)
         rmse = np.sqrt(mean_squared_error(y_test, preds))
         mae = mean_absolute_error(y_test, preds)
 
-        # Registrar métricas
         mlflow.log_metric("rmse", rmse)
         mlflow.log_metric("mae", mae)
 
-        # 6. Guardar el modelo en MLflow
-        mlflow.xgboost.log_model(model, artifact_path="xgboost-model")
+        # Guardar el modelo entrenado
+        mlflow.xgboost.log_model(model, artifact_path="xgboost-colombia-model")
 
-        print(f"Entrenamiento completado. RMSE: {rmse:,.2f} COP | MAE: {mae:,.2f} COP")
+        print("\n" + "=" * 50)
+        print(f"✅ Entrenamiento completado!")
+        print(f"💰 Error Medio Absoluto (MAE): ${mae:,.0f} COP")
+        print(f"📈 Raíz del Error Cuadrático (RMSE): ${rmse:,.0f} COP")
+        print("=" * 50)
 
 
 if __name__ == "__main__":
