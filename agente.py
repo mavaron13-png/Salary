@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
+from herramientas_rag import consultar_estudios_mercado
+
 
 # 🔒 Cargar las variables ocultas del archivo .env
 load_dotenv()
@@ -84,17 +86,24 @@ try:
 except Exception as e:
     print(f"❌ Error al inicializar LangGraph o OpenAI: {e}")
 
+tools = [consultar_modelo_salarial, consultar_estudios_mercado]
+agente_laboral = create_react_agent(llm, tools)
+
+
 if __name__ == "__main__":
-    system_prompt = """Eres un asistente experto en el mercado laboral colombiano. 
-    Tu objetivo es ayudar a los usuarios a conocer su remuneración justa. 
-    SIEMPRE usa la herramienta 'consultar_modelo_salarial' cuando el usuario te dé su perfil profesional. 
-    Si te hacen preguntas fuera del ámbito laboral, declina amablemente la respuesta."""
+    system_prompt = """
+    Eres un asistente experto en el mercado laboral colombiano.
+    Tu objetivo es ayudar a los usuarios a conocer su remuneración justa.
+    
+    Tienes acceso a dos herramientas. Úsalas estratégicamente:
+    1. 'consultar_modelo_salarial': Úsala SIEMPRE Y ÚNICAMENTE cuando el usuario te proporcione su perfil exacto (edad, educación, experiencia, sector) para predecir su sueldo.
+    2. 'consultar_estudios_mercado': Úsala cuando el usuario pregunte por promedios de mercado, perfiles gerenciales (ej. CFO, CEO), o datos generales extraídos de encuestas y PDFs de la industria.
+    
+    Si te hacen preguntas fuera del ámbito laboral (recetas, política, etc.), declina amablemente la respuesta.
+    """
 
     mensaje_usuario = """
-    Hola, soy un hombre de 28 años. Tengo educación superior (código 6). 
-    Trabajo en el sector de TI (código 62) con un contrato a término indefinido (código 1). 
-    Llevo 36 meses en mi empresa actual, trabajo 40 horas a la semana y mi empresa tiene más de 50 empleados (código 3). 
-    Sí estoy afiliado a salud (código 1). ¿Cuánto debería estar ganando según el mercado?
+    "¿Cuánto ganan los cargos gerenciales en tecnología según LHH?
     """
 
     print("\n👤 Usuario:", mensaje_usuario)
