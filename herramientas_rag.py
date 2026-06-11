@@ -20,6 +20,7 @@ mongo_client = MongoClient(os.getenv("MONGO_URI"))
 db = mongo_client["mercado_laboral_db"]
 coleccion_exacta = db["registros_completos"]
 
+
 @tool
 def consultar_estudios_mercado(consulta: str) -> str:
     """
@@ -36,43 +37,56 @@ def consultar_estudios_mercado(consulta: str) -> str:
         )
         vector_consulta = respuesta_embed.data[0].embedding
 
-        # 2. Query en Pinecone
+        # 2. Query en Pinecone (Subimos top_k a 20 para atrapar todas las variantes de empresa)
         resultados_pinecone = pinecone_index.query(
-            vector=vector_consulta, top_k=5, include_metadata=True
+            vector=vector_consulta, top_k=20, include_metadata=True
         )
         print(f"🌲 [RAG LOG] Pinecone encontró {len(resultados_pinecone.matches)} fragmentos.")
 
         if not resultados_pinecone.matches:
             return "No se encontró información en los estudios de mercado."
 
-        # 3. Extraer IDs base (quitando el '-chunk' si lo tiene)
-        ids_base = []
+        # 3. Extraer IDs (Detectando dinámicamente si es tabla o fila)
+        all_record_ids = []
+
         for match in resultados_pinecone.matches:
-            ids_base.append(match.id.replace("-chunk", ""))
+            meta = match.metadata
+            tipo_chunk = meta.get("tipo_chunk", "fila")  # Por defecto asumimos fila
 
-        # 4. Consultar en MongoDB
-        documentos_mongo = list(coleccion_exacta.find({"id": {"$in": ids_base}}))
+            if tipo_chunk == "tabla" and "record_ids" in meta:
+                # Extraemos la lista de IDs hijos de la tabla
+                ids_tabla = meta["record_ids"]
+                # Seguro por si Pinecone guardó la lista como un string serializado
+                if isinstance(ids_tabla, str):
+                    try:
+                        ids_tabla = json.loads(ids_tabla)
+                    except:
+                        ids_tabla = [ids_tabla]
 
-        # Mapear los documentos encontrados para fácil acceso
+                if isinstance(ids_tabla, list):
+                    all_record_ids.extend(ids_tabla)
+            else:
+                # Lógica tradicional para chunks tipo fila
+                id_base = match.id.replace("-chunk", "")
+                all_record_ids.append(id_base)
+
+        # Limpiar duplicados para no sobrecargar a MongoDB
+        all_record_ids = list(set(all_record_ids))
+
+        # 4. Consultar en MongoDB todos los registros de un solo golpe
+        documentos_mongo = list(coleccion_exacta.find({"id": {"$in": all_record_ids}}))
+
         mongo_dict = {doc["id"]: doc for doc in documentos_mongo}
         print(f"🍃 [RAG LOG] MongoDB hizo match con {len(mongo_dict)} registros exactos.")
 
         # 5. Armar el Contexto Final
         contexto_final = "📋 DATOS EXTRAÍDOS DE LOS ESTUDIOS DE MERCADO:\n\n"
 
-        for match in resultados_pinecone.matches:
-            id_limpio = match.id.replace("-chunk", "")
-
-            # Si el ID está en Mongo, usamos tu hermoso "texto_rag"
-            if id_limpio in mongo_dict:
-                doc = mongo_dict[id_limpio]
-                texto_precalculado = doc.get("texto_rag", "")
+        for doc_id, doc in mongo_dict.items():
+            # Inyectamos directamente los textos masticados de Mongo
+            texto_precalculado = doc.get("texto_rag", "")
+            if texto_precalculado:
                 contexto_final += f"✅ {texto_precalculado}\n\n"
-
-            # Si NO está en Mongo (Ej: Es el chunk de la tabla completa), usamos el texto del metadata
-            else:
-                texto_chunk = match.metadata.get("text", "")
-                contexto_final += f"📊 Fragmento/Tabla:\n{texto_chunk}\n\n"
 
         print(f"✅ [RAG LOG] Contexto final enviado al LLM ({len(contexto_final)} caracteres).")
         return contexto_final

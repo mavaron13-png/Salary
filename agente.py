@@ -80,14 +80,14 @@ try:
         temperature=0.1
     )
 
-    agente_laboral = create_react_agent(llm, tools)
+    agente_laboral = create_agent(llm, tools)
     print("✅ Agente ReAct construido y listo para pensar.")
 
 except Exception as e:
     print(f"❌ Error al inicializar LangGraph o OpenAI: {e}")
 
 tools = [consultar_modelo_salarial, consultar_estudios_mercado]
-agente_laboral = create_react_agent(llm, tools)
+agente_laboral = create_agent(llm, tools)
 
 
 if __name__ == "__main__":
