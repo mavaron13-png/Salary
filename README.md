@@ -34,7 +34,7 @@
 
 # \---
 
-# 
+
 
 # \# 📊 Calculadora de Remuneración Profesional - IA Dual
 
