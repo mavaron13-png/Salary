@@ -1,3 +1,53 @@
+# \---
+
+# title: Sueldo
+
+# emoji: 💼
+
+# colorFrom: blue
+
+# colorTo: purple
+
+# sdk: docker
+
+# app\_port: 7860
+
+# pinned: false
+
+# short\_description: Calculadora salarial con XGBoost, RAG agéntico y benchmarks de mercado para Colombia.
+
+# tags:
+
+# &#x20; - salary
+
+# &#x20; - colombia
+
+# &#x20; - xgboost
+
+# &#x20; - rag
+
+# &#x20; - pinecone
+
+# &#x20; - mongodb
+
+# &#x20; - langgraph
+
+# \---
+
+# 
+
+# \# 📊 Calculadora de Remuneración Profesional - IA Dual
+
+# 
+
+# Un sistema end-to-end impulsado por Inteligencia Artificial...
+
+# 
+
+# 
+
+# 
+
 # 📊 Calculadora de Remuneración Profesional - IA Dual
 
 Un sistema end-to-end impulsado por Inteligencia Artificial diseñado para estimar la compensación salarial en el mercado laboral colombiano. El proyecto implementa una arquitectura de **IA Dual**, cruzando predicciones estadísticas de Machine Learning (XGBoost) con datos ejecutivos extraídos de estudios oficiales de mercado a través de un pipeline RAG Agentico.
