@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#090a12}
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:99px;border:3px solid transparent;background-clip:padding-box}
+  ::-webkit-scrollbar-track{background:transparent}
+  input[type=range]{-webkit-appearance:none;appearance:none;background:transparent}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2)) no-repeat,rgba(255,255,255,.08);background-size:var(--rfill,50%) 100%,100% 100%}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-6px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 2px 10px var(--glow);cursor:pointer;transition:transform .12s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--accent);cursor:pointer}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes riseIn{from{transform:translateY(14px)}to{transform:none}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes shimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes pulseRing{0%{transform:scale(.85);opacity:.7}70%{transform:scale(1.25);opacity:0}100%{opacity:0}}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+</style>
+</helmet>
+<div style="--bg:#090a12; --surface:rgba(20,22,35,.62); --surf2:#12141f; --field:#0c0e18; --border:rgba(255,255,255,.08); --text:#eaecf6; --muted:#9197ad; --green:#34d399; --red:#f87171; --accent:{{accent}}; --accent2:{{accent2}}; --glow:{{glow}}; --grad:linear-gradient(135deg,var(--accent),var(--accent2)); --rv:{{rv}}; background:radial-gradient(1100px 620px at 12% -8%, {{glowSoft}}, transparent 60%), radial-gradient(1000px 600px at 100% 8%, {{glowSoft2}}, transparent 55%), var(--bg); color:var(--text); font-family:Manrope,system-ui,sans-serif; min-height:100vh; padding:34px 22px 90px;">
+
+  <div style="max-width:1160px; margin:0 auto;">
+
+    <!-- ============ HEADER ============ -->
+    <header style="display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-bottom:26px;">
+      <div style="display:flex; gap:16px; align-items:flex-start; max-width:720px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:var(--grad);display:grid;place-items:center;box-shadow:0 12px 30px -8px var(--glow);flex:none;font-family:'Space Grotesk';font-weight:700;color:#fff;font-size:19px;letter-spacing:-.02em;">RØ</div>
+        <div>
+          <h1 style="margin:0 0 7px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:27px; line-height:1.12; letter-spacing:-.02em;">Calculadora de Remuneración Profesional <span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">· IA Dual</span></h1>
+          <p style="margin:0; color:var(--muted); font-size:14.5px; line-height:1.55;">Sube tu perfil profesional, extrae tus datos con IA y compara tu estimación salarial con benchmarks reales de mercado.</p>
+        </div>
+      </div>
+      <div style="display:inline-flex; align-items:center; gap:9px; padding:9px 14px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); font-size:12px; font-weight:600; color:var(--muted); white-space:nowrap;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--accent2);box-shadow:0 0 10px var(--accent2);"></span>
+        XGBoost · RAG Agéntico · Extracción IA desde PDF
+      </div>
+    </header>
+
+    <!-- ============ STEPPER ============ -->
+    <div style="display:flex; align-items:center; gap:0; margin-bottom:30px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 20px; backdrop-filter:blur(12px);">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+        <div style="display:flex; align-items:center; flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:11px; min-width:0;">
+            <div style="{{ st.circle }}">{{ st.mark }}</div>
+            <div style="min-width:0;">
+              <div style="font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700;">Paso {{ st.num }}</div>
+              <div style="{{ st.label }}">{{ st.name }}</div>
+            </div>
+          </div>
+          <div style="{{ st.bar }}"></div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- ================= STEP 1: UPLOAD ================= -->
+    <sc-if value="{{ isUpload }}" hint-placeholder-val="{{ true }}">
+    <div style="animation:riseIn var(--rv) ease both;">
+      <div style="display:grid; grid-template-columns:1.35fr .9fr; gap:20px; align-items:start;">
+
+        <!-- Dropzone -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:30px; backdrop-filter:blur(14px); box-shadow:0 22px 50px -30px rgba(0,0,0,.9);">
+          <input type="file" accept="application/pdf" ref="{{ fileRef }}" onChange="{{ h.onFile }}" style="display:none;">
+
+          <sc-if value="{{ upIdle }}" hint-placeholder-val="{{ true }}">
+          <div onClick="{{ h.pick }}" style="border:1.5px dashed rgba(255,255,255,.16); border-radius:16px; padding:46px 24px; text-align:center; cursor:pointer; transition:.2s; background:radial-gradient(420px 200px at 50% 0%, rgba(255,255,255,.03), transparent);" style-hover="border-color:var(--accent);background:rgba(255,255,255,.04);">
+            <div style="width:64px;height:64px;border-radius:18px;margin:0 auto 18px;background:var(--grad);display:grid;place-items:center;box-shadow:0 16px 36px -12px var(--glow);animation:floaty 4s ease-in-out infinite;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 16v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3"/></svg>
+            </div>
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:18px;margin-bottom:6px;">Arrastra tu <span style="color:var(--accent2);">Profile.pdf</span> de LinkedIn</div>
+            <div style="color:var(--muted);font-size:13.5px;margin-bottom:22px;">PDF exportado desde tu perfil · máx 10 MB</div>
+            <button onClick="{{ h.pick }}" style="background:var(--grad);color:#fff;border:none;border-radius:12px;padding:13px 24px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:0 12px 30px -10px var(--glow);transition:transform .15s;" style-hover="transform:translateY(-2px);">⇪ Subir Profile.pdf de LinkedIn</button>
+            <div style="margin-top:16px;font-size:12.5px;color:var(--muted);">¿Sin PDF a mano? <span onClick="{{ h.useExample }}" style="color:var(--accent2);cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:3px;">Usar perfil de ejemplo</span></div>
+          </div>
+          </sc-if>
+
+          <!-- Uploading / processing -->
+          <sc-if value="{{ upBusy }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:var(--field);">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(248,113,113,.0);display:grid;place-items:center;flex:none;background:linear-gradient(135deg,#e23d3d,#ff6a4d);font-weight:800;color:#fff;font-size:11px;font-family:'Space Grotesk';">PDF</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:14px;">{{ fileName }}</div>
+                <div style="font-size:12px;color:var(--muted);">{{ fileSize }} · {{ upMsg }}</div>
+              </div>
+              <div style="font-family:'JetBrains Mono';font-size:13px;color:var(--accent2);font-weight:600;">{{ pctLabel }}</div>
+            </div>
+            <div style="height:6px;border-radius:99px;background:rgba(255,255,255,.07);margin-top:14px;overflow:hidden;">
+              <div style="height:100%;border-radius:99px;background:var(--grad);width:{{ pctW }};transition:width .15s linear;"></div>
+            </div>
+
+            <sc-if value="{{ upExtracting }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:22px;">
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px;">⟳ Extrayendo perfil con IA…</div>
+              <div style="display:grid;gap:10px;">
+                <div style="height:13px;border-radius:6px;width:60%;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.14),rgba(255,255,255,.05));background-size:840px 100%;animation:shimmer 1.3s linear infinite;"></div>
+                <div style="height:13px;border-radius:6px;width:85%;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.14),rgba(255,255,255,.05));background-size:840px 100%;animation:shimmer 1.3s linear infinite .1s;"></div>
+                <div style="height:13px;border-radius:6px;width:72%;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.14),rgba(255,255,255,.05));background-size:840px 100%;animation:shimmer 1.3s linear infinite .2s;"></div>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+          </sc-if>
+
+          <!-- Extracted OK -->
+          <sc-if value="{{ upDone }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:riseIn var(--rv) ease both;">
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:var(--field);">
+              <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#e23d3d,#ff6a4d);display:grid;place-items:center;flex:none;font-weight:800;color:#fff;font-size:11px;font-family:'Space Grotesk';">PDF</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:14px;">{{ fileName }}</div>
+                <div style="font-size:12px;color:var(--muted);">{{ fileSize }} · documento procesado</div>
+              </div>
+              <div onClick="{{ h.reset }}" style="cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:4px;" style-hover="color:var(--red);">×</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding:13px 16px;border-radius:12px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);">
+              <span style="color:var(--green);font-size:17px;">✓</span>
+              <span style="font-size:13.5px;font-weight:600;color:#a7f3d0;">Perfil extraído y validado con éxito</span>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
+              <button onClick="{{ h.goReview }}" style="flex:1;min-width:200px;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:14px 20px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:0 12px 30px -10px var(--glow);transition:transform .15s;" style-hover="transform:translateY(-2px);">Revisar datos extraídos →</button>
+              <button onClick="{{ h.autocomplete }}" style="background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:14px 20px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:.15s;" style-hover="background:rgba(255,255,255,.09);">✨ Autocompletar mi perfil</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- Extraction error -->
+          <sc-if value="{{ upError }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:riseIn var(--rv) ease both;">
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:18px;border-radius:14px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);">
+              <span style="color:var(--red);font-size:20px;line-height:1;">⚠</span>
+              <div>
+                <div style="font-weight:700;font-size:15px;color:#fecaca;margin-bottom:5px;">No pudimos extraer el perfil</div>
+                <div style="font-size:13px;color:#fca5a5;line-height:1.5;">El PDF parece protegido o no tiene texto seleccionable. Vuelve a exportar tu perfil desde LinkedIn o completa los datos manualmente.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
+              <button onClick="{{ h.useExample }}" style="flex:1;min-width:180px;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:13px 20px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 12px 30px -10px var(--glow);">↻ Reintentar</button>
+              <button onClick="{{ h.goReview }}" style="background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:13px 20px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;">Completar manualmente</button>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+
+        <!-- Right rail: how it works -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:26px; backdrop-filter:blur(14px);">
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:18px;">Cómo funciona</div>
+          <sc-for list="{{ how }}" as="hw" hint-placeholder-count="3">
+          <div style="display:flex;gap:13px;margin-bottom:18px;">
+            <div style="width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid var(--border);font-size:15px;">{{ hw.icon }}</div>
+            <div>
+              <div style="font-weight:700;font-size:13.5px;margin-bottom:3px;">{{ hw.t }}</div>
+              <div style="font-size:12.5px;color:var(--muted);line-height:1.5;">{{ hw.d }}</div>
+            </div>
+          </div>
+          </sc-for>
+          <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">🔒 Tus datos se procesan de forma segura y no se comparten. Stack: <span style="font-family:'JetBrains Mono';color:var(--accent2);">FastAPI · MongoDB · Pinecone</span>.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ================= STEP 2: REVIEW ================= -->
+    <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+    <div style="animation:riseIn var(--rv) ease both;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+
+        <!-- IA extracted -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:26px; backdrop-filter:blur(14px);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:9px;font-family:'Space Grotesk';font-weight:600;font-size:16px;">🤖 Datos extraídos por IA</div>
+            <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.25);">Editable</span>
+          </div>
+          <p style="margin:0 0 20px;font-size:12.5px;color:var(--muted);line-height:1.5;">La IA puede equivocarse, y los humanos también — aunque normalmente con más confianza. Revisa y corrige.</p>
+
+          <div style="margin-bottom:17px;">
+            <label style="display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700;">Último cargo</label>
+            <input value="{{ p.cargo }}" onChange="{{ h.cargo }}" style="width:100%;background:var(--field);border:1px solid var(--border);color:var(--text);border-radius:11px;padding:12px 14px;font:inherit;font-size:14px;outline:none;transition:.15s;" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);">
+          </div>
+
+          <div style="margin-bottom:17px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;">
+              <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;">Edad inferida</label>
+              <span style="font-family:'JetBrains Mono';font-size:14px;color:var(--accent2);font-weight:600;">{{ p.edad }} años</span>
+            </div>
+            <input type="range" min="18" max="70" value="{{ p.edad }}" onInput="{{ h.edad }}" style="width:100%;--rfill:{{ edadFill }};">
+          </div>
+
+          <div style="margin-bottom:17px;">
+            <label style="display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 9px;font-weight:700;">Sexo</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button onClick="{{ h.sexoH }}" style="{{ segH }}">Hombre</button>
+              <button onClick="{{ h.sexoM }}" style="{{ segM }}">Mujer</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:17px;">
+            <label style="display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700;">Nivel educativo</label>
+            <div style="position:relative;">
+              <select value="{{ p.edu }}" onChange="{{ h.edu }}" style="width:100%;appearance:none;-webkit-appearance:none;background:var(--field);border:1px solid var(--border);color:var(--text);border-radius:11px;padding:12px 38px 12px 14px;font:inherit;font-size:14px;outline:none;cursor:pointer;">
+                <option>Secundaria</option><option>Técnico / Tecnólogo</option><option>Pregrado / Profesional</option><option>Especialización / Maestría / Doctorado</option>
+              </select>
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);font-size:11px;">▼</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:17px;">
+            <label style="display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700;">Sector económico inferido (CIIU)</label>
+            <div style="position:relative;">
+              <select value="{{ p.sector }}" onChange="{{ h.sector }}" style="width:100%;appearance:none;-webkit-appearance:none;background:var(--field);border:1px solid var(--border);color:var(--text);border-radius:11px;padding:12px 38px 12px 14px;font:inherit;font-size:14px;outline:none;cursor:pointer;">
+                <option>62 — Tecnología, Software y TI</option><option>64 — Servicios financieros (Fintech)</option><option>70 — Consultoría de gestión</option><option>47 — Comercio al por menor</option><option>86 — Salud</option><option>85 — Educación</option>
+              </select>
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);font-size:11px;">▼</span>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;">
+              <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;">Meses de experiencia total</label>
+              <span style="font-family:'JetBrains Mono';font-size:14px;color:var(--accent2);font-weight:600;">{{ p.meses }} meses · {{ aniosLabel }}</span>
+            </div>
+            <input type="range" min="0" max="360" value="{{ p.meses }}" onInput="{{ h.meses }}" style="width:100%;--rfill:{{ mesesFill }};">
+          </div>
+        </div>
+
+        <!-- Manual data -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:26px; backdrop-filter:blur(14px);">
+          <div style="display:flex;align-items:center;gap:9px;font-family:'Space Grotesk';font-weight:600;font-size:16px;margin-bottom:6px;">📝 Datos manuales</div>
+          <p style="margin:0 0 20px;font-size:12.5px;color:var(--muted);line-height:1.5;">Completa lo que la IA no puede inferir desde el PDF.</p>
+
+          <div style="margin-bottom:18px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;">
+              <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;">Horas semanales de trabajo</label>
+              <span style="font-family:'JetBrains Mono';font-size:14px;color:var(--accent2);font-weight:600;">{{ p.horas }} h</span>
+            </div>
+            <input type="range" min="10" max="60" value="{{ p.horas }}" onInput="{{ h.horas }}" style="width:100%;--rfill:{{ horasFill }};">
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <label style="display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 9px;font-weight:700;">¿Está afiliado a salud?</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button onClick="{{ h.saludSi }}" style="{{ segSi }}">✓ Sí</button>
+              <button onClick="{{ h.saludNo }}" style="{{ segNo }}">No</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <label style="display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700;">Último tipo de contrato</label>
+            <div style="position:relative;">
+              <select value="{{ p.contrato }}" onChange="{{ h.contrato }}" style="width:100%;appearance:none;-webkit-appearance:none;background:var(--field);border:1px solid var(--border);color:var(--text);border-radius:11px;padding:12px 38px 12px 14px;font:inherit;font-size:14px;outline:none;cursor:pointer;">
+                <option>Término Indefinido</option><option>Término Fijo</option><option>Prestación de servicios</option><option>Obra o labor</option>
+              </select>
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);font-size:11px;">▼</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:24px;">
+            <label style="display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 9px;font-weight:700;">Tamaño de la empresa</label>
+            <div style="display:grid;gap:8px;">
+              <sc-for list="{{ sizes }}" as="sz" hint-placeholder-count="3">
+                <button onClick="{{ sz.on }}" style="{{ sz.style }}">
+                  <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">{{ sz.icon }}</span>{{ sz.label }}</span>
+                  <span style="font-size:13px;">{{ sz.check }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <button onClick="{{ h.calcular }}" style="width:100%;background:var(--grad);color:#fff;border:none;border-radius:14px;padding:17px 20px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;box-shadow:0 16px 38px -12px var(--glow);transition:transform .15s,box-shadow .15s;letter-spacing:.01em;" style-hover="transform:translateY(-2px);box-shadow:0 22px 46px -12px var(--glow);">⚡ Calcular Estimación Salarial IA</button>
+          <div style="text-align:center;margin-top:14px;"><span onClick="{{ h.reset }}" style="font-size:12.5px;color:var(--muted);cursor:pointer;" style-hover="color:var(--text);">← Volver a subir otro perfil</span></div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ================= STEP 3: CALCULATING ================= -->
+    <sc-if value="{{ isCalc }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;place-items:center;padding:40px 0;animation:riseIn var(--rv) ease both;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 44px;max-width:520px;width:100%;text-align:center;backdrop-filter:blur(14px);box-shadow:0 30px 70px -40px #000;">
+        <div style="position:relative;width:96px;height:96px;margin:0 auto 28px;">
+          <div style="position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);opacity:.0;animation:pulseRing 2s ease-out infinite;"></div>
+          <div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.08);border-top-color:var(--accent);border-right-color:var(--accent2);animation:spin 1s linear infinite;"></div>
+          <div style="position:absolute;inset:14px;border-radius:50%;background:var(--grad);display:grid;place-items:center;box-shadow:0 0 40px -6px var(--glow);font-size:26px;">⚡</div>
+        </div>
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:20px;margin-bottom:7px;">Calculando estimación salarial</div>
+        <div style="color:var(--muted);font-size:13.5px;margin-bottom:28px;">Cruzando tu perfil con el modelo estadístico y el benchmark de mercado…</div>
+        <div style="display:grid;gap:11px;text-align:left;">
+          <sc-for list="{{ calcTasks }}" as="ct" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:13px;padding:12px 15px;border-radius:12px;background:var(--field);border:1px solid var(--border);">
+              <div style="{{ ct.dot }}">{{ ct.mark }}</div>
+              <span style="font-size:13.5px;font-weight:600;{{ ct.textColor }}">{{ ct.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ================= STEP 3b: BACKEND ERROR ================= -->
+    <sc-if value="{{ isCalcErr }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;place-items:center;padding:40px 0;animation:riseIn var(--rv) ease both;">
+      <div style="background:var(--surface);border:1px solid rgba(248,113,113,.25);border-radius:24px;padding:44px;max-width:520px;width:100%;text-align:center;backdrop-filter:blur(14px);">
+        <div style="width:72px;height:72px;border-radius:20px;margin:0 auto 22px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);display:grid;place-items:center;font-size:30px;">🔌</div>
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:20px;margin-bottom:8px;color:#fecaca;">Error de conexión con el backend</div>
+        <div style="color:#fca5a5;font-size:13.5px;line-height:1.6;margin-bottom:26px;">No pudimos contactar el servicio de predicción <span style="font-family:'JetBrains Mono';">FastAPI</span>. Tus datos se conservan — vuelve a intentarlo en unos segundos.</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button onClick="{{ h.calcular }}" style="background:var(--grad);color:#fff;border:none;border-radius:12px;padding:13px 26px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 12px 30px -10px var(--glow);">↻ Reintentar cálculo</button>
+          <button onClick="{{ h.goReview }}" style="background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:13px 26px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;">Editar datos</button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ================= STEP 4: RESULTS ================= -->
+    <sc-if value="{{ isResults }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:11px;">
+          <span style="font-size:12px;font-weight:700;padding:6px 12px;border-radius:99px;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.25);">✓ Análisis completo</span>
+          <span style="font-size:13px;color:var(--muted);">Perfil: <b style="color:var(--text);">{{ p.cargo }}</b></span>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button onClick="{{ h.goReview }}" style="background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;font-size:13px;cursor:pointer;" style-hover="background:rgba(255,255,255,.09);">✏ Editar datos</button>
+          <button onClick="{{ h.reset }}" style="background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;font-size:13px;cursor:pointer;" style-hover="background:rgba(255,255,255,.09);">↻ Nuevo perfil</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+        <!-- XGBoost card -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px;backdrop-filter:blur(14px);animation:riseIn var(--rv) ease both;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span style="width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:grid;place-items:center;font-size:15px;">📊</span>
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:15.5px;">Modelo estadístico de empleabilidad general</div>
+          </div>
+          <div style="font-size:11px;font-family:'JetBrains Mono';color:var(--muted);margin-bottom:18px;margin-left:40px;">XGBoost · predicción ML</div>
+
+          <!-- Gauge -->
+          <div style="display:grid;place-items:center;margin-bottom:8px;">
+            <svg width="260" height="158" viewBox="0 0 260 158">
+              <path d="M 30 138 A 100 100 0 0 1 230 138" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="16" stroke-linecap="round"/>
+              <path d="M 30 138 A 100 100 0 0 1 230 138" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ gaugeDash }}" style="transition:stroke-dasharray 1.3s cubic-bezier(.2,.8,.2,1);"/>
+              <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="{{ accent }}"/><stop offset="1" stop-color="{{ accent2 }}"/></linearGradient></defs>
+              <g style="transform:rotate({{ needleDeg }}deg);transform-origin:130px 138px;transition:transform 1.3s cubic-bezier(.2,.8,.2,1);">
+                <line x1="130" y1="138" x2="130" y2="62" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+              </g>
+              <circle cx="130" cy="138" r="7" fill="#fff"/>
+              <circle cx="130" cy="138" r="3.5" fill="{{ accent }}"/>
+            </svg>
+          </div>
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px;">Salario estimado</div>
+            <div style="font-family:'JetBrains Mono';font-weight:700;font-size:30px;letter-spacing:-.02em;">{{ dispModel }}</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:6px;">Rango sugerido <span style="font-family:'JetBrains Mono';color:var(--text);">{{ modelRange }}</span></div>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px;">Variables principales</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <sc-for list="{{ vars }}" as="v" hint-placeholder-count="5">
+                <span style="font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:#c3c8db;">{{ v }}</span>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="font-size:12px;color:var(--muted);line-height:1.6;padding:13px 15px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid var(--border);">
+            ℹ Este modelo estima el salario a partir de variables generales de empleabilidad. Puede diferir del benchmark ejecutivo cuando el cargo pertenece a posiciones directivas, fundadores o roles altamente especializados.
+          </div>
+        </div>
+
+        <!-- Benchmark card -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px;backdrop-filter:blur(14px);animation:riseIn var(--rv) ease both .08s;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span style="width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:grid;place-items:center;font-size:15px;">🏛</span>
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:15.5px;">Benchmark ejecutivo de mercado</div>
+          </div>
+          <div style="font-size:11px;font-family:'JetBrains Mono';color:var(--muted);margin-bottom:18px;margin-left:40px;">RAG agéntico · Pinecone</div>
+
+          <div style="padding:15px 16px;border-radius:13px;background:var(--grad);position:relative;overflow:hidden;margin-bottom:16px;box-shadow:0 14px 34px -16px var(--glow);">
+            <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;">Cargo encontrado</div>
+            <div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:#fff;">CEO / Co-Founder</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.85);margin-top:4px;">Tecnología &amp; Digital · Cargos Gerenciales — Empresas Grandes <b style="font-family:'JetBrains Mono';">$38.150.000</b></div>
+          </div>
+
+          <div style="display:grid;gap:11px;max-height:none;">
+            <sc-for list="{{ benchmarks }}" as="b" hint-placeholder-count="4">
+            <div style="padding:14px 15px;border-radius:13px;background:var(--field);border:1px solid var(--border);">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px;">
+                <div>
+                  <div style="font-weight:700;font-size:13.5px;">{{ b.role }}</div>
+                  <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">{{ b.tag }}</div>
+                </div>
+                <span style="flex:none;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--accent2);font-family:'JetBrains Mono';">{{ b.source }}</span>
+              </div>
+              <div style="height:7px;border-radius:99px;background:rgba(255,255,255,.06);position:relative;overflow:hidden;">
+                <div style="position:absolute;top:0;height:100%;border-radius:99px;background:var(--grad);left:{{ b.barLeft }};width:{{ b.barW }};transition:width 1s ease .2s,left 1s ease .2s;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:7px;font-family:'JetBrains Mono';font-size:12px;">
+                <span style="color:var(--muted);">{{ b.minL }}</span>
+                <span style="color:var(--text);font-weight:600;">{{ b.maxL }}</span>
+              </div>
+            </div>
+            </sc-for>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:14px;text-align:center;">Fuentes: Estudio Laboral <b style="color:var(--text);">LHH</b> · <b style="color:var(--text);">MyDNA</b> — valores mensuales en COP</div>
+        </div>
+      </div>
+
+      <!-- Comparison -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;backdrop-filter:blur(14px);margin-top:20px;animation:riseIn var(--rv) ease both .16s;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px;">
+          <span style="width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:grid;place-items:center;font-size:15px;">⚖️</span>
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:16px;">Comparación entre modelo estadístico y mercado</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:26px;">
+          <div style="padding:18px;border-radius:14px;background:var(--field);border:1px solid var(--border);">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px;">Modelo XGBoost</div>
+            <div style="font-family:'JetBrains Mono';font-weight:700;font-size:22px;">{{ dispModel }}</div>
+          </div>
+          <div style="padding:18px;border-radius:14px;background:var(--field);border:1px solid var(--border);">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px;">Benchmark mercado</div>
+            <div style="font-family:'JetBrains Mono';font-weight:700;font-size:22px;">{{ dispMarket }}</div>
+          </div>
+          <div style="padding:18px;border-radius:14px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.22);">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fca5a5;font-weight:700;margin-bottom:8px;">Brecha estimada</div>
+            <div style="font-family:'JetBrains Mono';font-weight:700;font-size:22px;color:#fecaca;">−{{ dispGap }}</div>
+          </div>
+        </div>
+
+        <!-- comparison axis -->
+        <div style="margin-bottom:24px;">
+          <div style="position:relative;height:46px;">
+            <div style="position:absolute;top:20px;left:0;right:0;height:7px;border-radius:99px;background:rgba(255,255,255,.06);"></div>
+            <div style="position:absolute;top:20px;height:7px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));left:{{ modelPos }};width:{{ gapW }};opacity:.35;transition:all 1.2s ease .2s;"></div>
+            <div style="position:absolute;top:0;left:{{ modelPos }};transform:translateX(-50%);transition:left 1.2s cubic-bezier(.2,.8,.2,1) .2s;text-align:center;">
+              <div style="width:3px;height:30px;background:#fff;margin:14px auto 0;border-radius:2px;"></div>
+              <div style="font-size:10px;color:var(--muted);font-weight:700;white-space:nowrap;margin-top:3px;">XGBoost</div>
+            </div>
+            <div style="position:absolute;top:0;left:{{ marketPos }};transform:translateX(-50%);transition:left 1.2s cubic-bezier(.2,.8,.2,1) .2s;text-align:center;">
+              <div style="width:14px;height:14px;border-radius:50%;background:var(--grad);margin:11px auto 0;box-shadow:0 0 14px var(--glow);border:2px solid #fff;"></div>
+              <div style="font-size:10px;color:var(--accent2);font-weight:700;white-space:nowrap;margin-top:5px;">Mercado</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);margin-top:2px;"><span>$2.000.000</span><span>$42.000.000</span></div>
+        </div>
+
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid var(--border);">
+          <span style="font-size:20px;line-height:1.2;">💡</span>
+          <div>
+            <div style="font-weight:700;font-size:13.5px;margin-bottom:6px;">Lectura del análisis</div>
+            <p style="margin:0;font-size:13px;color:#c3c8db;line-height:1.65;">El modelo estadístico estima un salario <b style="color:var(--text);">menor</b> al benchmark de mercado porque el cargo detectado pertenece a una categoría <b style="color:var(--text);">ejecutiva o fundadora</b>. Para este perfil, el benchmark de mercado puede ser <b style="color:var(--accent2);">más representativo</b> que el modelo general de empleabilidad.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+
+  <!-- ============ DEMO STATE PANEL ============ -->
+  <sc-if value="{{ showDemo }}" hint-placeholder-val="{{ true }}">
+  <div style="position:fixed;left:16px;bottom:16px;z-index:50;font-family:Manrope,sans-serif;">
+    <sc-if value="{{ demoOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="background:rgba(14,16,26,.92);border:1px solid var(--border);border-radius:14px;padding:14px;backdrop-filter:blur(14px);box-shadow:0 20px 50px -20px #000;width:210px;margin-bottom:10px;">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px;">Vista previa de estados</div>
+      <div style="display:grid;gap:6px;">
+        <sc-for list="{{ demoStates }}" as="d" hint-placeholder-count="7">
+          <button onClick="{{ d.on }}" style="text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;" style-hover="background:rgba(255,255,255,.09);"><span>{{ d.icon }}</span>{{ d.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+    <button onClick="{{ h.toggleDemo }}" style="background:rgba(14,16,26,.92);border:1px solid var(--border);color:var(--muted);border-radius:11px;padding:9px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(14px);display:flex;align-items:center;gap:7px;" style-hover="color:var(--text);">⚙ Estados (demo) {{ demoCaret }}</button>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:820},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;aurora&quot;,&quot;nebula&quot;],&quot;default&quot;:&quot;aurora&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;reduceMotion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;showStateDemo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  fileRef = React.createRef();
+  timers = [];
+  state = {
+    scene: 'upload',          // upload | review | calc | calcerr | results
+    up: 'idle',               // idle | uploading | uploaded | extracting | extracted | error
+    pct: 0,
+    fileName: '', fileSize: '',
+    profile: null,
+    reveal: false,
+    calcStep: 0,
+    disp: { model: 0, market: 0, gap: 0 },
+    demoOpen: false,
+  };
+
+  // ----- mock data (mirrors example from spec) -----
+  EXAMPLE = {
+    cargo: 'CEO & Co-Founder', edad: 42, sexo: 'Hombre',
+    edu: 'Especialización / Maestría / Doctorado',
+    sector: '62 — Tecnología, Software y TI', meses: 101,
+    horas: 47, salud: 'Sí', contrato: 'Término Indefinido',
+    tamano: 'Pequeña (<50 empleados)',
+  };
+  MODEL = 3513004;            // XGBoost estimate (COP)
+  MODEL_MIN = 2861004; MODEL_MAX = 4165004;
+  MARKET = 31000000;         // representative market median
+  AXIS_MIN = 2000000; AXIS_MAX = 42000000;
+
+  BENCH = [
+    { role: 'CEO para Empresas Pequeñas', tag: 'Fintech', min: 25000000, max: 35000000, source: 'LHH' },
+    { role: 'Presidente / Gerente General', tag: 'Tecnología & Digital · Gerenciales', min: 24400000, max: 37600000, source: 'LHH' },
+    { role: 'VP de Tecnología', tag: 'Tecnología & Digital · Gerenciales', min: 17950000, max: 29000000, source: 'MyDNA' },
+    { role: 'Chief Technology Officer', tag: 'Tecnología & Digital · Gerenciales', min: 17950000, max: 22650000, source: 'LHH' },
+  ];
+  BENCH_SCALE_MIN = 15000000; BENCH_SCALE_MAX = 40000000;
+
+  cop(n) { return '$' + new Intl.NumberFormat('es-CO').format(Math.round(n)) + ' COP'; }
+  copShort(n) { return '$' + new Intl.NumberFormat('es-CO').format(Math.round(n)); }
+  pctStr(a, lo, hi) { return Math.max(0, Math.min(100, (a - lo) / (hi - lo) * 100)).toFixed(1) + '%'; }
+
+  componentWillUnmount() { this.clear(); }
+  clear() { this.timers.forEach(t => clearTimeout(t)); this.timers = []; if (this._raf) cancelAnimationFrame(this._raf); if (this._raf2) cancelAnimationFrame(this._raf2); }
+  after(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
+
+  // ----- upload flow -----
+  pick = () => { if (this.fileRef.current) this.fileRef.current.click(); };
+  onFile = (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; this.beginUpload(f.name, (f.size / 1024).toFixed(0) + ' KB'); };
+  useExample = () => this.beginUpload('Profile.pdf', '524 KB');
+
+  beginUpload(name, size) {
+    this.clear();
+    this.setState({ scene: 'upload', up: 'uploading', pct: 0, fileName: name, fileSize: size });
+    // mockUploadPdf -> POST /api/upload (MongoDB GridFS)
+    const start = Date.now(), dur = 1000;
+    const tick = () => {
+      const p = Math.min(100, Math.round((Date.now() - start) / dur * 100));
+      this.setState({ pct: p });
+      if (p < 100) { this._raf = requestAnimationFrame(tick); }
+      else { this.setState({ up: 'uploaded' }); this.after(450, this.runExtraction); }
+    };
+    this._raf = requestAnimationFrame(tick);
+  }
+  runExtraction = () => {
+    this.setState({ up: 'extracting' });
+    // mockExtractProfile -> LLM extraction validated against Mongo schema
+    this.after(1900, () => this.setState({ up: 'extracted', profile: { ...this.EXAMPLE } }));
+  };
+  autocomplete = () => this.setState({ profile: { ...this.EXAMPLE }, up: 'extracted', scene: 'review' });
+  goReview = () => this.setState(s => ({ scene: 'review', profile: s.profile || { ...this.EXAMPLE } }));
+  setField = (k, v) => this.setState(s => ({ profile: { ...s.profile, [k]: v } }));
+
+  // ----- calculation -----
+  calcular = () => {
+    this.clear();
+    this.setState({ scene: 'calc', reveal: false, calcStep: 0, disp: { model: 0, market: 0, gap: 0 } });
+    // mockPredictXGBoost -> POST /api/predict ; mockQueryRAG -> Pinecone + LHH/MyDNA
+    this.after(650, () => this.setState({ calcStep: 1 }));
+    this.after(1300, () => this.setState({ calcStep: 2 }));
+    this.after(1950, () => this.setState({ calcStep: 3 }));
+    this.after(2350, () => { this.setState({ calcStep: 4, scene: 'results' }); this.after(120, () => this.setState({ reveal: true })); this.after(260, this.runCounters); });
+  };
+  runCounters = () => {
+    const T = { model: this.MODEL, market: this.MARKET, gap: this.MARKET - this.MODEL };
+    if (this.props.reduceMotion) { this.setState({ disp: T }); return; }
+    const start = Date.now(), dur = 1300;
+    const step = () => {
+      const t = Math.min(1, (Date.now() - start) / dur), e = 1 - Math.pow(1 - t, 3);
+      this.setState({ disp: { model: T.model * e, market: T.market * e, gap: T.gap * e } });
+      if (t < 1) this._raf2 = requestAnimationFrame(step);
+    };
+    this._raf2 = requestAnimationFrame(step);
+  };
+
+  reset = () => { this.clear(); this.setState({ scene: 'upload', up: 'idle', pct: 0, profile: null, reveal: false, calcStep: 0, disp: { model: 0, market: 0, gap: 0 } }); };
+  toggleDemo = () => this.setState(s => ({ demoOpen: !s.demoOpen }));
+
+  demo = (name) => {
+    this.clear();
+    const base = { reveal: false, demoOpen: false };
+    if (name === 'idle') this.setState({ ...base, scene: 'upload', up: 'idle', pct: 0, profile: null });
+    else if (name === 'uploaded') this.setState({ ...base, scene: 'upload', up: 'uploaded', pct: 100, fileName: 'Profile.pdf', fileSize: '524 KB', profile: { ...this.EXAMPLE } });
+    else if (name === 'extracted') this.setState({ ...base, scene: 'upload', up: 'extracted', fileName: 'Profile.pdf', fileSize: '524 KB', profile: { ...this.EXAMPLE } });
+    else if (name === 'review') this.setState({ ...base, scene: 'review', profile: { ...this.EXAMPLE } });
+    else if (name === 'calc') this.setState({ ...base, scene: 'calc', calcStep: 2, profile: { ...this.EXAMPLE } });
+    else if (name === 'results') { this.setState({ ...base, scene: 'results', reveal: true, profile: { ...this.EXAMPLE }, disp: { model: this.MODEL, market: this.MARKET, gap: this.MARKET - this.MODEL } }); }
+    else if (name === 'errExtract') this.setState({ ...base, scene: 'upload', up: 'error', fileName: 'Profile.pdf', fileSize: '524 KB' });
+    else if (name === 'errBackend') this.setState({ ...base, scene: 'calcerr', profile: { ...this.EXAMPLE } });
+  };
+
+  // ----- theme -----
+  theme() {
+    const t = this.props.theme || 'aurora';
+    if (t === 'nebula') return { accent: '#a855f7', accent2: '#ec4899', glow: 'rgba(168,85,247,.45)', soft: 'rgba(168,85,247,.13)', soft2: 'rgba(236,72,153,.10)' };
+    return { accent: '#6366f1', accent2: '#22d3ee', glow: 'rgba(99,102,241,.45)', soft: 'rgba(99,102,241,.13)', soft2: 'rgba(34,211,238,.09)' };
+  }
+
+  renderVals() {
+    const s = this.state, th = this.theme();
+    const p = s.profile || this.EXAMPLE;
+    const sceneIdx = { upload: 0, review: 1, calc: 2, calcerr: 2, results: 3 }[s.scene];
+
+    // stepper
+    const names = ['Subir perfil', 'Revisar datos', 'Calcular', 'Resultados'];
+    const steps = names.map((name, i) => {
+      const st = i < sceneIdx ? 'done' : i === sceneIdx ? 'active' : 'todo';
+      const circle = st === 'done'
+        ? 'width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.35);'
+        : st === 'active'
+        ? 'width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;background:var(--grad);color:#fff;box-shadow:0 8px 20px -6px var(--glow);font-family:JetBrains Mono;'
+        : 'width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);font-family:JetBrains Mono;';
+      const label = 'font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' + (st === 'todo' ? 'var(--muted)' : 'var(--text)') + ';';
+      const bar = i < 3 ? ('flex:1;height:2px;margin:0 14px;border-radius:2px;min-width:14px;background:' + (i < sceneIdx ? 'linear-gradient(90deg,var(--accent),var(--accent2))' : 'rgba(255,255,255,.08)') + ';') : 'display:none;';
+      return { name, num: String(i + 1).padStart(2, '0'), mark: st === 'done' ? '✓' : String(i + 1).padStart(2, '0'), circle, label, bar };
+    });
+
+    // segmented styles
+    const seg = (active) => 'padding:11px 14px;border-radius:11px;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:7px;' + (active ? 'background:var(--grad);color:#fff;border:1px solid transparent;box-shadow:0 8px 22px -10px var(--glow);' : 'background:var(--field);color:var(--muted);border:1px solid var(--border);');
+    const segRow = (active) => 'width:100%;text-align:left;padding:12px 15px;border-radius:11px;font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:space-between;' + (active ? 'background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--accent);box-shadow:0 0 0 3px var(--glow);' : 'background:var(--field);color:var(--muted);border:1px solid var(--border);');
+
+    const sizeDefs = [
+      { label: 'Pequeña (<50 empleados)', icon: '🏠' },
+      { label: 'Mediana (50–200 empleados)', icon: '🏢' },
+      { label: 'Grande (>200 empleados)', icon: '🏙' },
+    ];
+    const sizes = sizeDefs.map(d => ({ label: d.label, icon: d.icon, check: p.tamano === d.label ? '●' : '', style: segRow(p.tamano === d.label), on: () => this.setField('tamano', d.label) }));
+
+    // calc tasks
+    const taskLabels = ['Procesando variables del perfil', 'Prediciendo salario (XGBoost)', 'Recuperando benchmarks (RAG · Pinecone)', 'Cruzando fuentes LHH / MyDNA'];
+    const calcTasks = taskLabels.map((label, i) => {
+      const done = i < s.calcStep, active = i === s.calcStep;
+      const dot = done
+        ? 'width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.35);'
+        : active
+        ? 'width:24px;height:24px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:spin .8s linear infinite;'
+        : 'width:24px;height:24px;border-radius:50%;flex:none;border:1px solid var(--border);';
+      return { label, dot, mark: done ? '✓' : '', textColor: 'color:' + (done || active ? 'var(--text)' : 'var(--muted)') + ';' };
+    });
+
+    // benchmark bars
+    const bScale = (v) => (v - this.BENCH_SCALE_MIN) / (this.BENCH_SCALE_MAX - this.BENCH_SCALE_MIN) * 100;
+    const benchmarks = this.BENCH.map(b => {
+      const left = Math.max(0, bScale(b.min)), right = Math.min(100, bScale(b.max));
+      return { role: b.role, tag: b.tag, source: b.source, minL: this.copShort(b.min), maxL: this.copShort(b.max), barLeft: left.toFixed(1) + '%', barW: s.reveal ? (right - left).toFixed(1) + '%' : '0%' };
+    });
+
+    // gauge (model within suggested range)
+    const gFrac = (this.MODEL - this.MODEL_MIN) / (this.MODEL_MAX - this.MODEL_MIN);
+    const gShown = s.reveal ? gFrac : 0;
+
+    // comparison axis
+    const pos = (v) => ((v - this.AXIS_MIN) / (this.AXIS_MAX - this.AXIS_MIN) * 100);
+    const mPos = pos(this.MODEL), kPos = pos(this.MARKET);
+
+    const demoStates = [
+      { key: 'idle', icon: '○', label: 'Inicial (sin PDF)' },
+      { key: 'uploaded', icon: '📄', label: 'PDF cargado' },
+      { key: 'extracted', icon: '✓', label: 'Extracción exitosa' },
+      { key: 'review', icon: '📝', label: 'Revisar datos' },
+      { key: 'calc', icon: '⚡', label: 'Calculando' },
+      { key: 'results', icon: '📊', label: 'Resultado exitoso' },
+      { key: 'errExtract', icon: '⚠', label: 'Error de extracción' },
+      { key: 'errBackend', icon: '🔌', label: 'Error de backend' },
+    ].map(d => ({ icon: d.icon, label: d.label, on: () => this.demo(d.key) }));
+
+    return {
+      accent: th.accent, accent2: th.accent2, glow: th.glow, glowSoft: th.soft, glowSoft2: th.soft2,
+      rv: this.props.reduceMotion ? '0.001s' : '.55s',
+      steps, p,
+      // scene flags
+      isUpload: s.scene === 'upload', isReview: s.scene === 'review', isCalc: s.scene === 'calc', isCalcErr: s.scene === 'calcerr', isResults: s.scene === 'results',
+      // upload sub-states
+      upIdle: s.up === 'idle', upBusy: s.up === 'uploading' || s.up === 'extracting', upExtracting: s.up === 'extracting', upDone: s.up === 'extracted', upError: s.up === 'error',
+      upMsg: s.up === 'extracting' ? 'extrayendo perfil…' : (s.up === 'uploaded' ? 'subido' : 'subiendo…'),
+      fileName: s.fileName, fileSize: s.fileSize, pctLabel: s.pct + '%', pctW: s.pct + '%',
+      how: [
+        { icon: '⇪', t: 'Sube tu PDF', d: 'Exporta tu perfil de LinkedIn y súbelo. La IA lo lee por ti.' },
+        { icon: '🤖', t: 'Extracción con IA', d: 'Detectamos cargo, sector CIIU, experiencia y educación automáticamente.' },
+        { icon: '⚖️', t: 'Doble estimación', d: 'Comparamos un modelo XGBoost con benchmarks ejecutivos reales.' },
+      ],
+      // fields
+      edadFill: (((p.edad - 18) / 52) * 100).toFixed(0) + '%',
+      mesesFill: ((p.meses / 360) * 100).toFixed(0) + '%',
+      horasFill: (((p.horas - 10) / 50) * 100).toFixed(0) + '%',
+      aniosLabel: (p.meses / 12).toFixed(1).replace('.0', '') + ' años',
+      segH: seg(p.sexo === 'Hombre'), segM: seg(p.sexo === 'Mujer'),
+      segSi: seg(p.salud === 'Sí'), segNo: seg(p.salud === 'No'),
+      sizes, calcTasks,
+      // results
+      dispModel: this.cop(s.disp.model), dispMarket: this.cop(s.disp.market), dispGap: this.cop(s.disp.gap),
+      modelRange: this.copShort(this.MODEL_MIN) + ' – ' + this.copShort(this.MODEL_MAX),
+      gaugeDash: (gShown * 100).toFixed(1) + ',100',
+      needleDeg: (-90 + gShown * 180).toFixed(1),
+      vars: ['Cargo', 'Sector CIIU', 'Experiencia', 'Educación', 'Tamaño empresa', 'Horas/sem'],
+      benchmarks,
+      modelPos: mPos.toFixed(1) + '%', marketPos: kPos.toFixed(1) + '%',
+      gapW: (kPos - mPos).toFixed(1) + '%',
+      // demo
+      showDemo: this.props.showStateDemo !== false, demoOpen: s.demoOpen, demoCaret: s.demoOpen ? '▾' : '▴', demoStates,
+      // handlers
+      h: {
+        pick: this.pick, onFile: this.onFile, useExample: this.useExample, reset: this.reset,
+        goReview: this.goReview, autocomplete: this.autocomplete, calcular: this.calcular, toggleDemo: this.toggleDemo,
+        cargo: (e) => this.setField('cargo', e.target.value),
+        edad: (e) => this.setField('edad', +e.target.value),
+        meses: (e) => this.setField('meses', +e.target.value),
+        horas: (e) => this.setField('horas', +e.target.value),
+        edu: (e) => this.setField('edu', e.target.value),
+        sector: (e) => this.setField('sector', e.target.value),
+        contrato: (e) => this.setField('contrato', e.target.value),
+        sexoH: () => this.setField('sexo', 'Hombre'), sexoM: () => this.setField('sexo', 'Mujer'),
+        saludSi: () => this.setField('salud', 'Sí'), saludNo: () => this.setField('salud', 'No'),
+      },
+      fileRef: this.fileRef,
+    };
+  }
+}
+</script>
+</body>
+</html>

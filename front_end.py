@@ -117,13 +117,13 @@ def extraer_datos_pdf(archivo_pdf):
         return [gr.update()] * 6 + [f"❌ Error al extraer: {str(e)}"]
 
 # --- FASE 2: INFERENCIA DUAL ---
+# --- FASE 2: INFERENCIA DUAL (RECONCILIADA) ---
 def calcular_salario_dual(edad, sexo, educacion, salud, sector_visual, contrato, exp, horas, tamano_empresa,
                           ultimo_cargo):
-    # Extraemos el número del sector_visual (Ej. de "62 - Tecnología" sacamos el 62 entero)
     try:
         sector_num = int(str(sector_visual).split(" - ")[0])
     except:
-        sector_num = 62  # Fallback por si acaso
+        sector_num = 62  # Fallback
 
     # 1. Petición a XGBoost
     url_fastapi = "http://127.0.0.1:8000/predict"
@@ -134,29 +134,49 @@ def calcular_salario_dual(edad, sexo, educacion, salud, sector_visual, contrato,
         "horas_semanales": horas, "tamano_empresa": tamano_empresa
     }
 
+    salario_estimado = 0
     try:
         print("🚀 Consultando XGBoost...")
         res = requests.post(url_fastapi, json=payload)
         if res.status_code == 200:
             data = res.json()
-            resultado_ml = f"### 🤖 Modelo Matemático (XGBoost)\n- **Salario Estimado:** ${data['salario_estimado_cop']:,.2f} COP\n- **Rango Sugerido:** ${data['rango_sugerido_min_cop']:,.2f} - ${data['rango_sugerido_max_cop']:,.2f} COP"
+            salario_estimado = data['salario_estimado_cop']
+            # CAMBIO 2: Nuevo título para el modelo estadístico
+            resultado_ml = f"### 🤖 Modelo estadístico de empleabilidad general\n- **Salario Estimado:** ${salario_estimado:,.2f} COP\n- **Rango Sugerido:** ${data['rango_sugerido_min_cop']:,.2f} - ${data['rango_sugerido_max_cop']:,.2f} COP"
         else:
             resultado_ml = f"Error en FastAPI: {res.text}"
     except Exception as e:
         resultado_ml = f"Error conectando al modelo: {e}"
 
-    # 2. Petición al Agente RAG
+    # 2. Petición al Agente RAG con Capa de Reconciliación
     try:
         print("📚 Consultando RAG Documental...")
         mapa_tamano = {1: "empresa pequeña", 2: "empresa mediana", 3: "empresa grande"}
         str_tamano = mapa_tamano.get(tamano_empresa, "empresa")
 
-        prompt_agente = f"Según los estudios de mercado, ¿cuánto gana un {ultimo_cargo} en una {str_tamano} en Colombia? Muestra los datos exactos que encuentres en los documentos."
+        # CAMBIO 1: Hack de Prompting para Mejorar el Ranking en Pinecone
+        instruccion_sector = f"en el sector '{sector_visual}'"
+        if sector_num == 62:
+            instruccion_sector += " (INSTRUCCIÓN ESTRICTA PARA TU BÚSQUEDA: Incluye y prioriza las palabras clave 'Tecnología & Digital – Cargos Gerenciales', 'Fintech', 'Digital Sector' o 'Startups' en tu consulta de herramientas)."
 
-        # Invocamos al Orquestador de LangGraph
+        # CAMBIO 3: El LLM actúa como Capa de Reconciliación
+        from langchain_core.messages import HumanMessage
+        prompt_agente = f"""
+        Actúa como un analista de compensación experto.
+        1. Busca en los estudios de mercado cuánto gana un '{ultimo_cargo}' en una {str_tamano} en Colombia, específicamente {instruccion_sector}.
+
+        2. El Modelo Estadístico General ha estimado un salario de ${salario_estimado:,.2f} COP para este usuario.
+
+        3. Evalúa los datos. Si encuentras salarios en los estudios de mercado y notas que este benchmark es significativamente superior a la estimación del modelo, DEBES incluir EXACTAMENTE esta alerta resaltada al final de tu respuesta:
+        "💡 **Nota de Reconciliación:** El modelo estadístico estima por variables generales, pero los estudios de mercado para este cargo sugieren un rango superior."
+
+        Muestra los datos exactos y salarios que encuentres en los documentos.
+        """
+
         respuesta = orquestador.invoke({"messages": [HumanMessage(content=prompt_agente)]})
-        # El Orquestador nos devuelve el estado final, tomamos el último mensaje
-        resultado_rag = f"### 📚 Análisis del Agente\n{respuesta['messages'][-1].content}"
+
+        # CAMBIO 2: Nuevo título para el Benchmark
+        resultado_rag = f"### 📚 Benchmark ejecutivo de mercado\n{respuesta['messages'][-1].content}"
     except Exception as e:
         resultado_rag = f"Error en Agente RAG: {e}"
 
@@ -202,7 +222,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
                 choices=[("Pequeña (<50 empleados)", 1), ("Mediana (50-200)", 2), ("Grande (>200)", 3)], value=3,
                 label="¿Cuál es el tamaño de la empresa?")
 
-            btn_calcular = gr.Button("2️⃣ Calcular mi Salario Ideal", variant="primary")
+            btn_calcular = gr.Button("2️⃣ Calcular Estimación Salarial IA", variant="primary")
 
     with gr.Row():
         out_ml = gr.Markdown()
