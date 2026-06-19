@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-data_dir = r"C:\Users\ma_va\Documents\Salary\DATA"
+data_dir = r"C:\Users\ma_va\Documents\Salary\data\raw\DANE"
 
 # 1. Definir solo las columnas confirmadas
 cols_llaves = ['DIRECTORIO', 'SECUENCIA_P', 'ORDEN']

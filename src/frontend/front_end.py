@@ -8,7 +8,7 @@ from openai import OpenAI
 from langchain_core.messages import HumanMessage
 
 # Importamos a nuestro Agente (asegúrate de que exista en agente.py)
-from orquestador import orquestador
+from src.agent.orquestador import orquestador
 
 load_dotenv()
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))

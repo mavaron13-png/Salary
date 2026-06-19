@@ -1,27 +1,22 @@
-# Variables de entorno (¡SECRETOS Y API KEYS!)
-.env
-
 # Entornos virtuales
 venv/
 env/
-
-# Archivos de caché de Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
 
-# Archivos de MLflow (Bases de datos locales y modelos pesados)
+# Secretos y variables de entorno
+.env
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# 🛑 Basura de Experimentación (NO SUBIR A PRODUCCIÓN)
 mlflow.db
 mlruns/
-xgboost_produccion.json
+*.ipynb
+.pytest_cache/
 
-# Datos pesados o crudos (¡Evita saturar GitHub y protege los datos del DANE!)
-DATA/
-RAW DATA/
-*.csv
-*.zip
-
-# Configuraciones del Editor/IDE (PyCharm / VS Code)
-.idea/
-.vscode/
+# 🛑 Datos crudos (Ignorar toda la carpeta data excepto los modelos)
+data/*
+!data/models/
+# (Si tu modelo está suelto en otra carpeta, ajusta la ruta de arriba)

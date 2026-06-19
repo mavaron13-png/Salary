@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # Definir la ruta exacta de tus datos
-data_dir = r"C:\Users\ma_va\Documents\Salary\DATA"
+data_dir = r"C:\Users\ma_va\Documents\Salary\data\raw\DANE"
 
 
 def unificar_archivos(prefijo_entrada, nombre_salida):

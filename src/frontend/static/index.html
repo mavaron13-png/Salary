@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
+<script src="/static/support.js"></script>
 </head>
 <body>
 <x-dc>
@@ -73,7 +73,7 @@
 
         <!-- Dropzone -->
         <div style="background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:30px; backdrop-filter:blur(14px); box-shadow:0 22px 50px -30px rgba(0,0,0,.9);">
-          <input type="file" accept="application/pdf" ref="{{ fileRef }}" onChange="{{ h.onFile }}" style="display:none;">
+          <input id="pdf-upload" type="file" accept="application/pdf" onChange="{{ h.onFile }}" style="display:none;">
 
           <sc-if value="{{ upIdle }}" hint-placeholder-val="{{ true }}">
           <div onClick="{{ h.pick }}" style="border:1.5px dashed rgba(255,255,255,.16); border-radius:16px; padding:46px 24px; text-align:center; cursor:pointer; transition:.2s; background:radial-gradient(420px 200px at 50% 0%, rgba(255,255,255,.03), transparent);" style-hover="border-color:var(--accent);background:rgba(255,255,255,.04);">
@@ -382,42 +382,46 @@
         </div>
 
         <!-- Benchmark card -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px;backdrop-filter:blur(14px);animation:riseIn var(--rv) ease both .08s;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-            <span style="width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:grid;place-items:center;font-size:15px;">🏛</span>
-            <div style="font-family:'Space Grotesk';font-weight:600;font-size:15.5px;">Benchmark ejecutivo de mercado</div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:20px;box-shadow:0 12px 40px rgba(0,0,0,.2);animation:riseIn var(--rv) ease both;animation-delay:.15s;">
+          <div>
+            <div style="font-family:Space Grotesk;font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+              <span>📚 Benchmark ejecutivo de mercado</span>
+            </div>
+            <div style="font-size:13px;color:var(--muted);font-weight:500;">Estudios salariales cruzados de alta resolución (LHH / MyDNA)</div>
           </div>
-          <div style="font-size:11px;font-family:'JetBrains Mono';color:var(--muted);margin-bottom:18px;margin-left:40px;">RAG agéntico · Pinecone</div>
 
-          <div style="padding:15px 16px;border-radius:13px;background:var(--grad);position:relative;overflow:hidden;margin-bottom:16px;box-shadow:0 14px 34px -16px var(--glow);">
-            <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;">Cargo encontrado</div>
-            <div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:#fff;">CEO / Co-Founder</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.85);margin-top:4px;">Tecnología &amp; Digital · Cargos Gerenciales — Empresas Grandes <b style="font-family:'JetBrains Mono';">$38.150.000</b></div>
+          <div style="padding:14px 16px;background:rgba(34,211,238,.04);border:1px solid rgba(34,211,238,.15);border-radius:14px;">
+            <div style="font-size:11px;color:var(--accent2);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Cargo Identificado en Estudios (Top 1 Semántico)</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);">{{ cargoTop1 }}</div>
           </div>
 
           <div style="display:grid;gap:11px;max-height:none;">
-            <sc-for list="{{ benchmarks }}" as="b" hint-placeholder-count="4">
+            <sc-for list="{{ benchmarks }}" as="b">
             <div style="padding:14px 15px;border-radius:13px;background:var(--field);border:1px solid var(--border);">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <div>
-                  <div style="font-weight:700;font-size:13.5px;">{{ b.role }}</div>
-                  <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">{{ b.tag }}</div>
+                  <div style="font-weight:700;font-size:13.5px;color:var(--text);margin-bottom:3px;">{{ b.role }}</div>
+                  <div style="font-size:11px;color:var(--muted);font-weight:600;">{{ b.tag }}</div>
                 </div>
-                <span style="flex:none;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--accent2);font-family:'JetBrains Mono';">{{ b.source }}</span>
+                <div style="text-align:right;">
+                  <div style="font-family:JetBrains Mono;font-size:12.5px;font-weight:700;color:var(--text);">{{ b.minL }}</div>
+                  <div style="font-family:JetBrains Mono;font-size:11px;color:var(--muted);margin-top:2px;">{{ b.maxL }}</div>
+                </div>
               </div>
-              <div style="height:7px;border-radius:99px;background:rgba(255,255,255,.06);position:relative;overflow:hidden;">
-                <div style="position:absolute;top:0;height:100%;border-radius:99px;background:var(--grad);left:{{ b.barLeft }};width:{{ b.barW }};transition:width 1s ease .2s,left 1s ease .2s;"></div>
-              </div>
-              <div style="display:flex;justify-content:space-between;margin-top:7px;font-family:'JetBrains Mono';font-size:12px;">
-                <span style="color:var(--muted);">{{ b.minL }}</span>
-                <span style="color:var(--text);font-weight:600;">{{ b.maxL }}</span>
+              <div style="height:4px;background:rgba(255,255,255,.05);border-radius:2px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:0;bottom:0;left:{{ b.barLeft }};width:{{ b.barW }};background:var(--accent2);border-radius:2px;transition:var(--rv) ease;"></div>
               </div>
             </div>
             </sc-for>
           </div>
-          <div style="font-size:11.5px;color:var(--muted);margin-top:14px;text-align:center;">Fuentes: Estudio Laboral <b style="color:var(--text);">LHH</b> · <b style="color:var(--text);">MyDNA</b> — valores mensuales en COP</div>
+
+          <sc-if condition="{{ notaReconciliacion }}">
+            <div style="font-size:13px;color:var(--text);line-height:1.6;padding:12px 14px;background:rgba(255,255,255,0.02);border-radius:10px;border-left:3px solid var(--accent2);white-space:pre-wrap;">
+              {{ notaReconciliacion }}
+            </div>
+          </sc-if>
         </div>
-      </div>
+        </div>
 
       <!-- Comparison -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;backdrop-filter:blur(14px);margin-top:20px;animation:riseIn var(--rv) ease both .16s;">
@@ -446,7 +450,7 @@
           <div style="position:relative;height:46px;">
             <div style="position:absolute;top:20px;left:0;right:0;height:7px;border-radius:99px;background:rgba(255,255,255,.06);"></div>
             <div style="position:absolute;top:20px;height:7px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));left:{{ modelPos }};width:{{ gapW }};opacity:.35;transition:all 1.2s ease .2s;"></div>
-            <div style="position:absolute;top:0;left:{{ modelPos }};transform:translateX(-50%);transition:left 1.2s cubic-bezier(.2,.8,.2,1) .2s;text-align:center;">
+            <div style="position:absolute;top:-28px;left:{{ modelPos }};transform:translateX(-50%);transition:left 1.2s cubic-bezier(.2,.8,.2,1) .2s;text-align:center;">
               <div style="width:3px;height:30px;background:#fff;margin:14px auto 0;border-radius:2px;"></div>
               <div style="font-size:10px;color:var(--muted);font-weight:700;white-space:nowrap;margin-top:3px;">XGBoost</div>
             </div>
@@ -470,6 +474,15 @@
     </sc-if>
 
   </div>
+
+  <!-- ============ FOOTER ============ -->
+<footer style="margin-top:42px;padding-top:22px;border-top:1px solid var(--border);text-align:center;font-size:12.5px;color:var(--muted);line-height:1.7;">
+  Desarrollado por <a href="https://www.linkedin.com/in/mario-varon-8b2a4249/" target="_blank" rel="noopener" style="color:var(--text);font-weight:600;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text)'">Ing. Mario Varón, M.Sc.</a>
+  <span style="margin:0 8px;opacity:.4;">·</span>
+  <a href="mailto:ma.varon13@gmail.com" style="color:var(--accent2);text-decoration:none;font-weight:600;">ma.varon13@gmail.com</a>
+  <span style="margin:0 8px;opacity:.4;">·</span>
+  <a href="https://github.com/mavaron13-png/Salary" target="_blank" rel="noopener" style="color:var(--accent2);text-decoration:none;font-weight:600;">Repo ↗</a>
+</footer>
 
   <!-- ============ DEMO STATE PANEL ============ -->
   <sc-if value="{{ showDemo }}" hint-placeholder-val="{{ true }}">
@@ -504,6 +517,7 @@ class Component extends DCLogic {
     calcStep: 0,
     disp: { model: 0, market: 0, gap: 0 },
     demoOpen: false,
+    ragTexto: ''
   };
 
   // ----- mock data (mirrors example from spec) -----
@@ -536,8 +550,54 @@ class Component extends DCLogic {
   after(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
 
   // ----- upload flow -----
-  pick = () => { if (this.fileRef.current) this.fileRef.current.click(); };
-  onFile = (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; this.beginUpload(f.name, (f.size / 1024).toFixed(0) + ' KB'); };
+  pick = () => { 
+    console.log("Abriendo ventana de Windows..."); 
+    const fileInput = document.getElementById('pdf-upload');
+    if (fileInput) fileInput.click(); 
+  };
+
+  onFile = async (e) => {
+    const f = e.target.files[0];
+    if(!f) return;
+
+    // 1. Activamos la escena de "uploading" y la animación nativa de la plantilla
+    this.setState({ scene: 'upload', up: 'uploading', pct: 0, fileName: f.name, fileSize: Math.round(f.size/1024)+' KB' });
+    
+    // Simulamos la barrita de progreso para UX mientras esperamos al backend
+    let p = 0;
+    const ival = setInterval(() => { p += 15; if(p>90) p=90; this.setState({ pct: p }); }, 150);
+
+    const formData = new FormData();
+    formData.append("file", f);
+
+    try {
+      const response = await fetch("/api/extraer-pdf", { method: "POST", body: formData });
+      clearInterval(ival);
+      
+      if (!response.ok) throw new Error("Error al leer el PDF");
+      const data = await response.json();
+
+      // 2. Mapeamos la respuesta del backend al formato exacto que espera tu UI
+      const newProfile = {
+        cargo: data.ultimo_cargo || 'Profesional',
+        edad: data.edad || 30,
+        sexo: data.sexo === 2 ? 'Mujer' : 'Hombre',
+        edu: data.nivel_educativo >= 7 ? 'Especialización / Maestría / Doctorado' : (data.nivel_educativo === 6 ? 'Pregrado / Profesional' : 'Secundaria'),
+        sector: data.sector_economico ? `${data.sector_economico} — ${data.nombre_sector}` : '62 — Tecnología, Software y TI',
+        meses: data.meses_experiencia || 36,
+        horas: 40, salud: 'Sí', contrato: 'Término Indefinido', tamano: 'Mediana (50–200 empleados)'
+      };
+
+      // 3. Pasamos a estado extraído
+      this.setState({ pct: 100, up: 'extracted', profile: newProfile });
+
+    } catch (error) {
+      clearInterval(ival);
+      console.error(error);
+      this.setState({ up: 'error' });
+    }
+  };
+
   useExample = () => this.beginUpload('Profile.pdf', '524 KB');
 
   beginUpload(name, size) {
@@ -563,15 +623,71 @@ class Component extends DCLogic {
   setField = (k, v) => this.setState(s => ({ profile: { ...s.profile, [k]: v } }));
 
   // ----- calculation -----
-  calcular = () => {
-    this.clear();
-    this.setState({ scene: 'calc', reveal: false, calcStep: 0, disp: { model: 0, market: 0, gap: 0 } });
-    // mockPredictXGBoost -> POST /api/predict ; mockQueryRAG -> Pinecone + LHH/MyDNA
-    this.after(650, () => this.setState({ calcStep: 1 }));
-    this.after(1300, () => this.setState({ calcStep: 2 }));
-    this.after(1950, () => this.setState({ calcStep: 3 }));
-    this.after(2350, () => { this.setState({ calcStep: 4, scene: 'results' }); this.after(120, () => this.setState({ reveal: true })); this.after(260, this.runCounters); });
+  calcular = async () => {
+    // 1. Activar pantalla de carga
+    this.setState({ scene: 'calc', calcStep: 1 });
+
+    const p = this.state.profile || this.EXAMPLE;
+    const payload = {
+      edad: p.edad || 30,
+      sexo: p.sexo === 'Mujer' ? 2 : 1,
+      nivel_educativo: p.edu.includes('Maestría') ? 7 : (p.edu.includes('Pregrado') ? 6 : 5),
+      afiliado_salud: p.salud === 'Sí' ? 1 : 2,
+      sector_economico: parseInt(p.sector.split(' ')[0]) || 62,
+      tipo_contrato: 1,
+      meses_experiencia: p.meses || 36,
+      horas_semanales: p.horas || 40,
+      tamano_empresa: p.tamano.includes('Pequeña') ? 1 : (p.tamano.includes('Mediana') ? 2 : 3),
+      ultimo_cargo: p.cargo || "Profesional"
+    };
+
+    try {
+      this.setState({ calcStep: 2 }); // Avanza la animación (Check 2)
+      
+      const response = await fetch("/api/calcular-dual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error("Error HTTP");
+      const result = await response.json();
+
+      // 1. Datos de XGBoost
+      if (result.xgboost && result.xgboost.salario_estimado) {
+        this.MODEL = result.xgboost.salario_estimado;
+        this.MODEL_MIN = result.xgboost.rango_min;
+        this.MODEL_MAX = result.xgboost.rango_max;
+      }
+
+      // 2. Datos reales del RAG estructurado
+      if (result.rag) {
+        this.MARKET = result.rag.valor_conservador;
+        // Reemplazamos la lista estática BENCH por la lista real que nos trae el Servidor
+        this.BENCH = result.rag.retrievals || [];
+      }
+
+      const pos = (v) => ((v - this.AXIS_MIN) / (this.AXIS_MAX - this.AXIS_MIN) * 100);
+      this.MODEL_POS = pos(this.MODEL).toFixed(1) + '%';
+      this.MARKET_POS = pos(this.MARKET).toFixed(1) + '%';
+
+      // 3. Pasamos los nuevos estados al motor reactivo
+      this.setState({
+        cargoTop1: result.rag.cargo_top1 || "Calculando...",
+        notaReconciliacion: result.rag.nota || "",
+        scene: 'results',
+        reveal: true,
+        disp: { model: this.MODEL, market: this.MARKET, gap: this.MARKET - this.MODEL }
+      });
+
+      this.runCounters();
+
+    } catch (error) {
+      console.error(error);
+      this.setState({ scene: 'calcerr' }); // Pantalla roja de error
+    }
   };
+
   runCounters = () => {
     const T = { model: this.MODEL, market: this.MARKET, gap: this.MARKET - this.MODEL };
     if (this.props.reduceMotion) { this.setState({ disp: T }); return; }
@@ -584,7 +700,7 @@ class Component extends DCLogic {
     this._raf2 = requestAnimationFrame(step);
   };
 
-  reset = () => { this.clear(); this.setState({ scene: 'upload', up: 'idle', pct: 0, profile: null, reveal: false, calcStep: 0, disp: { model: 0, market: 0, gap: 0 } }); };
+  reset = () => { this.clear(); this.setState({ scene: 'upload', up: 'idle', pct: 0, profile: null, reveal: false, calcStep: 0, disp: { model: 0, market: 0, gap: 0 }, ragTexto: '' }); };
   toggleDemo = () => this.setState(s => ({ demoOpen: !s.demoOpen }));
 
   demo = (name) => {
@@ -608,7 +724,8 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const s = this.state, th = this.theme();
+    const s = this.state;
+    const th = this.theme();
     const p = s.profile || this.EXAMPLE;
     const sceneIdx = { upload: 0, review: 1, calc: 2, calcerr: 2, results: 3 }[s.scene];
 
@@ -653,7 +770,14 @@ class Component extends DCLogic {
     const bScale = (v) => (v - this.BENCH_SCALE_MIN) / (this.BENCH_SCALE_MAX - this.BENCH_SCALE_MIN) * 100;
     const benchmarks = this.BENCH.map(b => {
       const left = Math.max(0, bScale(b.min)), right = Math.min(100, bScale(b.max));
-      return { role: b.role, tag: b.tag, source: b.source, minL: this.copShort(b.min), maxL: this.copShort(b.max), barLeft: left.toFixed(1) + '%', barW: s.reveal ? (right - left).toFixed(1) + '%' : '0%' };
+      return { 
+        role: b.role, 
+        tag: b.tag + ' · ' + b.source, // Fusionamos la especialidad con la fuente (LHH / MyDNA)
+        minL: '$' + new Intl.NumberFormat('es-CO').format(Math.round(b.min)), 
+        maxL: '$' + new Intl.NumberFormat('es-CO').format(Math.round(b.max)), 
+        barLeft: left.toFixed(1) + '%', 
+        barW: s.reveal ? (right - left).toFixed(1) + '%' : '0%' 
+      };
     });
 
     // gauge (model within suggested range)
@@ -707,6 +831,12 @@ class Component extends DCLogic {
       benchmarks,
       modelPos: mPos.toFixed(1) + '%', marketPos: kPos.toFixed(1) + '%',
       gapW: (kPos - mPos).toFixed(1) + '%',
+      
+      // --- NUEVAS VARIABLES ESTRUCTURADAS DEL RAG ---
+      cargoTop1: s.cargoTop1 || "Calculando mejor coincidencia...",
+      notaReconciliacion: s.notaReconciliacion || "",
+      ragTexto: s.ragTexto || "", 
+      
       // demo
       showDemo: this.props.showStateDemo !== false, demoOpen: s.demoOpen, demoCaret: s.demoOpen ? '▾' : '▴', demoStates,
       // handlers

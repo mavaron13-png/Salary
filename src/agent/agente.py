@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
-from herramientas_rag import consultar_estudios_mercado
+from src.agent.herramientas_rag import consultar_estudios_mercado
 
 
 # 🔒 Cargar las variables ocultas del archivo .env

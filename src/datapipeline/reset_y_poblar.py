@@ -78,6 +78,6 @@ def poblar_pinecone(ruta_chunks):
 
 if __name__ == "__main__":
     limpiar_bases()
-    poblar_mongo(r"C:\Users\ma_va\Documents\Salary\RAG\salary_records_normalized_merged.jsonl")
-    poblar_pinecone(r"C:\Users\ma_va\Documents\Salary\RAG\salary_chunks_from_normalized_records.jsonl")
+    poblar_mongo(r"C:\Users\ma_va\Documents\Salary\data\test\salary_records_normalized_merged.jsonl")
+    poblar_pinecone(r"C:\Users\ma_va\Documents\Salary\data\test\salary_chunks_from_normalized_records.jsonl")
     print("\n🚀 ¡Bases de datos reiniciadas y listas con la nueva estructura normalizada!")

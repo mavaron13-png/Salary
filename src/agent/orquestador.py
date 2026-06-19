@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph, END
 import operator
 
 # Importamos tu Agente Experto (el que ya armamos con XGBoost y RAG)
-from agente import agente_laboral
+from src.agent.agente import agente_laboral
 
 load_dotenv()
 llm_rapido = ChatOpenAI(model="gpt-4o-mini", temperature=0)

@@ -1,29 +1,50 @@
-# 🇨🇴 Salary - Asistente de Remuneración Profesional en Colombia
+# 📊 Calculadora de Remuneración Profesional - IA Dual
 
-## 📌 Descripción del Proyecto
-[cite_start]Este proyecto es un servicio web interactivo diseñado para que los usuarios puedan conocer una remuneración adecuada según su perfil profesional en el mercado laboral de Colombia[cite: 2]. [cite_start]A través de un chatbot inteligente, los usuarios pueden interactuar mediante texto, enviar audios o subir su Currículum Vitae en formato PDF [cite: 2] para recibir un análisis de sueldo, comparar su perfil con estudios del mercado y buscar ofertas reales.
+Un sistema end-to-end impulsado por Inteligencia Artificial diseñado para estimar la compensación salarial en el mercado laboral colombiano. El proyecto implementa una arquitectura de **IA Dual**, cruzando predicciones estadísticas de Machine Learning (XGBoost) con datos ejecutivos extraídos de estudios oficiales de mercado a través de un pipeline RAG Agentico.
 
-## 🏗️ Arquitectura y Stack Tecnológico
+## 🚀 Descripción y Alcance
 
-El sistema está construido bajo una arquitectura modular orientada a la baja latencia y optimización de costos en la nube:
+El objetivo principal es reducir la asimetría de información salarial para profesionales en Colombia. En lugar de requerir que el usuario llene formularios extensos, el sistema automatiza la entrada de datos leyendo directamente su perfil exportado de LinkedIn (PDF).
 
-### 1. Interfaz de Usuario (Capa de Presentación)
-* [cite_start]**Gradio:** Frontend temporal (PoC) que maneja la interfaz de chat, la grabación de audios y la carga de documentos PDF[cite: 63].
+El sistema entrega dos perspectivas reconciliadas:
 
-### 2. Backend (Capa de API)
-* [cite_start]**FastAPI:** El motor principal que recibe las peticiones, coordina los servicios y devuelve la respuesta al usuario[cite: 64].
-* [cite_start]**PyMuPDF:** Utilizado localmente para la extracción rápida de texto desde los PDFs (CVs)[cite: 66].
-* [cite_start]**Amazon Transcribe:** Servicio de AWS utilizado para convertir el audio enviado por el usuario a texto (Speech-to-Text)[cite: 67].
+1. **Modelo Estadístico General:** Predicción basada en encuestas nacionales (GEIH) evaluando variables como edad, educación, experiencia y sector.
+2. **Benchmark Ejecutivo:** Análisis contextual de estudios de mercado premium (LHH, MyDNA) para afinar rangos en cargos gerenciales o especializados.
 
-### 3. Orquestación y Cerebro (RAG Agéntico)
-* [cite_start]**LLM:** Amazon Bedrock (Claude 3 Haiku) para procesar el lenguaje natural con baja latencia y bajo costo[cite: 68].
-* [cite_start]**LangGraph:** Orquestador de flujos determinísticos que incluye un *router* para desviar temas que no sean laborales con respuestas estructuradas[cite: 69].
+## 🏗️ Arquitectura del Sistema
 
-### 4. Sistema Multi-Agente (Tools)
-* [cite_start]**RAG Documental:** Base de datos vectorial (ChromaDB/FAISS) para buscar perfiles y datos en documentos en PDF sobre estudios del mercado laboral en Colombia[cite: 5, 70].
-* [cite_start]**Mercado Actual:** Integración con SerpAPI para buscar ofertas de empleo similares en tiempo real y devolverlas en formato JSON[cite: 71].
-* [cite_start]**Predictor de Sueldo:** Consulta a un modelo de Machine Learning servido localmente[cite: 72].
+El flujo de la aplicación está dividido en capas independientes y orquestado mediante grafos de estado:
 
-### 5. MLOps y Machine Learning
-* [cite_start]**XGBoost:** Modelo basado en árboles de decisión (Gradient Boosting) para realizar la predicción tabular del sueldo basada en años de experiencia, educación y sector[cite: 53, 56].
-* [cite_start]**MLflow:** Plataforma utilizada para entrenar el modelo, registrar métricas (RMSE, MAE), realizar *tuning* de hiperparámetros y versionar el modelo predictivo[cite: 62, 73].
+1. **Extracción Inteligente (ETL \& Validation):** Lectura de PDFs e inferencia de variables (edad, sector CIIU) usando GPT-4o-mini con validación de entrada temprana (Early Input Validation) para bloquear documentos irrelevantes.
+2. **Inferencia de Machine Learning:** API RESTful (FastAPI) que sirve un modelo XGBoost en milisegundos.
+3. **Orquestación Agentica (LangGraph):** Un enrutador (Router) actúa como guardia de seguridad, bloqueando *prompt injections* antes de despertar al Agente ReAct principal.
+4. **RAG Híbrido Estructurado:** Búsqueda vectorial semántica (Pinecone) en clústeres de tablas documentales, unida a una consulta exacta de metadatos pre-computados (MongoDB) para eliminar alucinaciones.
+5. **Capa de Consenso (LLM Judge):** El Agente evalúa la brecha entre la predicción matemática y el benchmark de mercado, emitiendo alertas de reconciliación automáticamente.
+
+## 🛠️ Stack Tecnológico
+
+* **Frontend:** Gradio, HTML/JS/CSS nativo.
+* **Backend \& API:** FastAPI, Uvicorn, Python 3.11.
+* **Machine Learning:** XGBoost, Scikit-Learn, Pandas.
+* **GenAI \& Agentes:** OpenAI API (GPT-4o-mini, text-embedding-3-small), LangChain, LangGraph.
+* **Bases de Datos:** Pinecone (Vectorial Serverless), MongoDB (Documental Local).
+* **MLOps \& CI/CD:** MLflow (Tracking local estructurado), GitHub Actions (Evaluación Batch automatizada).
+
+## 📈 Rendimiento y Métricas
+
+### Músculo Predictivo (XGBoost)
+
+* **Variables Entrenadas (Features):** \~150 (incluyendo codificación *one-hot* de códigos CIIU).
+* **Métrica de Producción (RMSE):** $625400
+* **Monitoreo:** El RMSE es re-evaluado y versionado anualmente mediante triggers de GitHub Actions, guardando el histórico de parámetros en MLflow sin costos de servidor inactivo.
+
+### Cerebro RAG Agentico
+
+* **Estrategia de Chunking:** Generación semántica pre-calculada y almacenamiento tabular híbrido.
+* **Recuperación (Retrieval):** Top-K = 20 con expansión de query dinámica (inyección estricta de palabras clave para sectores tecnológicos).
+* **Latencia:** Resolución híbrida en Pinecone + MongoDB con un pase de contexto comprimido (<5,000 caracteres) para respuestas casi en tiempo real.
+
+\---
+
+*Desarrollado por Ing. Mario Varon M.Sc - AI Engineer.* ma.varon13@gmail.com
+
