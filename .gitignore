@@ -1,0 +1,34 @@
+# Entorno local
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+
+# MLflow local
+mlruns/
+mlflow.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Documentos y archivos pesados
+RAG/
+docs/
+*.docx
+*.pdf
+*.xlsx
+*.xls
+*.csv
+*.jsonl
+
+# Ignorar todo data...
+data/**
+
+# ...pero permitir el modelo productivo
+!data/
+!data/models/
+!data/models/xgboost_produccion.json
