@@ -1,52 +1,21 @@
-# \---
-
-# title: Sueldo
-
-# emoji: 💼
-
-# colorFrom: blue
-
-# colorTo: purple
-
-# sdk: docker
-
-# app\_port: 7860
-
-# pinned: false
-
-# short\_description: Calculadora salarial con XGBoost, RAG agéntico y benchmarks de mercado para Colombia.
-
-# tags:
-
-# &#x20; - salary
-
-# &#x20; - colombia
-
-# &#x20; - xgboost
-
-# &#x20; - rag
-
-# &#x20; - pinecone
-
-# &#x20; - mongodb
-
-# &#x20; - langgraph
-
-# \---
-
-
-
-# \# 📊 Calculadora de Remuneración Profesional - IA Dual
-
-# 
-
-# Un sistema end-to-end impulsado por Inteligencia Artificial...
-
-# 
-
-# 
-
-# 
+---
+title: Sueldo
+emoji: 💼
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: Calculadora salarial con XGBoost, RAG agéntico y benchmarks de mercado para Colombia.
+tags:
+  - salary
+  - colombia
+  - xgboost
+  - rag
+  - pinecone
+  - mongodb
+  - langgraph
+---
 
 # 📊 Calculadora de Remuneración Profesional - IA Dual
 
@@ -65,7 +34,7 @@ El sistema entrega dos perspectivas reconciliadas:
 
 El flujo de la aplicación está dividido en capas independientes y orquestado mediante grafos de estado:
 
-1. **Extracción Inteligente (ETL \& Validation):** Lectura de PDFs e inferencia de variables (edad, sector CIIU) usando GPT-4o-mini con validación de entrada temprana (Early Input Validation) para bloquear documentos irrelevantes.
+1. **Extracción Inteligente (ETL & Validation):** Lectura de PDFs e inferencia de variables (edad, sector CIIU) usando GPT-4o-mini con validación de entrada temprana (Early Input Validation) para bloquear documentos irrelevantes.
 2. **Inferencia de Machine Learning:** API RESTful (FastAPI) que sirve un modelo XGBoost en milisegundos.
 3. **Orquestación Agentica (LangGraph):** Un enrutador (Router) actúa como guardia de seguridad, bloqueando *prompt injections* antes de despertar al Agente ReAct principal.
 4. **RAG Híbrido Estructurado:** Búsqueda vectorial semántica (Pinecone) en clústeres de tablas documentales, unida a una consulta exacta de metadatos pre-computados (MongoDB) para eliminar alucinaciones.
@@ -74,17 +43,17 @@ El flujo de la aplicación está dividido en capas independientes y orquestado m
 ## 🛠️ Stack Tecnológico
 
 * **Frontend:** Gradio, HTML/JS/CSS nativo.
-* **Backend \& API:** FastAPI, Uvicorn, Python 3.11.
+* **Backend & API:** FastAPI, Uvicorn, Python 3.11.
 * **Machine Learning:** XGBoost, Scikit-Learn, Pandas.
-* **GenAI \& Agentes:** OpenAI API (GPT-4o-mini, text-embedding-3-small), LangChain, LangGraph.
+* **GenAI & Agentes:** OpenAI API (GPT-4o-mini, text-embedding-3-small), LangChain, LangGraph.
 * **Bases de Datos:** Pinecone (Vectorial Serverless), MongoDB (Documental Local).
-* **MLOps \& CI/CD:** MLflow (Tracking local estructurado), GitHub Actions (Evaluación Batch automatizada).
+* **MLOps & CI/CD:** MLflow (Tracking local estructurado), GitHub Actions (Evaluación Batch automatizada).
 
 ## 📈 Rendimiento y Métricas
 
 ### Músculo Predictivo (XGBoost)
 
-* **Variables Entrenadas (Features):** \~150 (incluyendo codificación *one-hot* de códigos CIIU).
+* **Variables Entrenadas (Features):** ~150 (incluyendo codificación *one-hot* de códigos CIIU).
 * **Métrica de Producción (RMSE):** $625400
 * **Monitoreo:** El RMSE es re-evaluado y versionado anualmente mediante triggers de GitHub Actions, guardando el histórico de parámetros en MLflow sin costos de servidor inactivo.
 
@@ -94,7 +63,6 @@ El flujo de la aplicación está dividido en capas independientes y orquestado m
 * **Recuperación (Retrieval):** Top-K = 20 con expansión de query dinámica (inyección estricta de palabras clave para sectores tecnológicos).
 * **Latencia:** Resolución híbrida en Pinecone + MongoDB con un pase de contexto comprimido (<5,000 caracteres) para respuestas casi en tiempo real.
 
-\---
+---
 
 *Desarrollado por Ing. Mario Varon M.Sc - AI Engineer.* ma.varon13@gmail.com
-
