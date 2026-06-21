@@ -1,21 +1,23 @@
 import os
+import json          # 🔒 FALTABA: sin esto, el primer chunk tipo "tabla" hacía NameError → crash
+import logging
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from pinecone import Pinecone
 from openai import OpenAI
 from langchain_core.tools import tool
 
-# 1. Cargar variables de entorno
 load_dotenv()
+logger = logging.getLogger("sueldo.rag")
 
-# 2. Inicializar Clientes (Fuera de la función para no abrir conexiones en cada consulta)
+# 2. Clientes inicializados una vez (fuera de la función)
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-print("🌲 Conectando a Pinecone...")
+logger.info("Conectando a Pinecone...")
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 pinecone_index = pc.Index("salary-rag-index")
 
-print("🍃 Conectando a MongoDB...")
+logger.info("Conectando a MongoDB...")
 mongo_client = MongoClient(os.getenv("MONGO_URI"))
 db = mongo_client["mercado_laboral_db"]
 coleccion_exacta = db["registros_completos"]
@@ -23,74 +25,59 @@ coleccion_exacta = db["registros_completos"]
 
 @tool
 def consultar_estudios_mercado(consulta: str) -> str:
-    """
-    Busca en los documentos oficiales y estudios de mercado (myDNA, LHH)
-    información sobre salarios, perfiles y empresas.
-    Úsala siempre que el usuario pregunte por datos de mercado, estudios o rangos salariales documentados.
-    """
+    """Busca en estudios de mercado (myDNA, LHH) salarios, perfiles y rangos documentados.
+    Úsala cuando el usuario pregunte por datos de mercado, estudios o rangos salariales."""
     try:
-        print(f"\n🔍 [RAG LOG] LLM preguntó: '{consulta}'")
+        # 🔒 logger.debug, no print: en prod (nivel INFO) NO se emite la consulta del usuario
+        #    ni el contexto recuperado. Antes los prints filtraban todo a stdout/logs del Space.
+        logger.debug("LLM preguntó: %s", consulta)
 
         # 1. Embed de la pregunta
-        respuesta_embed = openai_client.embeddings.create(
-            input=consulta, model="text-embedding-3-small"
-        )
-        vector_consulta = respuesta_embed.data[0].embedding
+        emb = openai_client.embeddings.create(input=consulta, model="text-embedding-3-small")
+        vector = emb.data[0].embedding
 
-        # 2. Query en Pinecone (Subimos top_k a 20 para atrapar todas las variantes de empresa)
-        resultados_pinecone = pinecone_index.query(
-            vector=vector_consulta, top_k=20, include_metadata=True
-        )
-        print(f"🌲 [RAG LOG] Pinecone encontró {len(resultados_pinecone.matches)} fragmentos.")
-
-        if not resultados_pinecone.matches:
+        # 2. Query en Pinecone
+        res = pinecone_index.query(vector=vector, top_k=20, include_metadata=True)
+        logger.debug("Pinecone: %d fragmentos.", len(res.matches))
+        if not res.matches:
             return "No se encontró información en los estudios de mercado."
 
-        # 3. Extraer IDs (Detectando dinámicamente si es tabla o fila)
-        all_record_ids = []
-
-        for match in resultados_pinecone.matches:
+        # 3. Extraer IDs (tabla o fila)
+        all_ids = []
+        for match in res.matches:
             meta = match.metadata
-            tipo_chunk = meta.get("tipo_chunk", "fila")  # Por defecto asumimos fila
-
-            if tipo_chunk == "tabla" and "record_ids" in meta:
-                # Extraemos la lista de IDs hijos de la tabla
-                ids_tabla = meta["record_ids"]
-                # Seguro por si Pinecone guardó la lista como un string serializado
-                if isinstance(ids_tabla, str):
+            tipo = meta.get("tipo_chunk", "fila")
+            if tipo == "tabla" and "record_ids" in meta:
+                ids = meta["record_ids"]
+                if isinstance(ids, str):
                     try:
-                        ids_tabla = json.loads(ids_tabla)
-                    except:
-                        ids_tabla = [ids_tabla]
-
-                if isinstance(ids_tabla, list):
-                    all_record_ids.extend(ids_tabla)
+                        ids = json.loads(ids)   # 🔒 ahora json sí existe
+                    except Exception:
+                        ids = [ids]
+                if isinstance(ids, list):
+                    all_ids.extend(ids)
             else:
-                # Lógica tradicional para chunks tipo fila
-                id_base = match.id.replace("-chunk", "")
-                all_record_ids.append(id_base)
+                all_ids.append(match.id.replace("-chunk", ""))
 
-        # Limpiar duplicados para no sobrecargar a MongoDB
-        all_record_ids = list(set(all_record_ids))
+        all_ids = list(set(all_ids))
 
-        # 4. Consultar en MongoDB todos los registros de un solo golpe
-        documentos_mongo = list(coleccion_exacta.find({"id": {"$in": all_record_ids}}))
+        # 4. MongoDB de un solo golpe. Nota: los IDs salen de TU índice, no del usuario.
+        docs = list(coleccion_exacta.find({"id": {"$in": all_ids}}))
+        mongo_dict = {d["id"]: d for d in docs}
+        logger.debug("MongoDB: %d registros.", len(mongo_dict))
 
-        mongo_dict = {doc["id"]: doc for doc in documentos_mongo}
-        print(f"🍃 [RAG LOG] MongoDB hizo match con {len(mongo_dict)} registros exactos.")
+        # 5. Armar contexto
+        contexto = "📋 DATOS EXTRAÍDOS DE LOS ESTUDIOS DE MERCADO:\n\n"
+        for doc in mongo_dict.values():
+            txt = doc.get("texto_rag", "")
+            if txt:
+                contexto += f"✅ {txt}\n\n"
 
-        # 5. Armar el Contexto Final
-        contexto_final = "📋 DATOS EXTRAÍDOS DE LOS ESTUDIOS DE MERCADO:\n\n"
-
-        for doc_id, doc in mongo_dict.items():
-            # Inyectamos directamente los textos masticados de Mongo
-            texto_precalculado = doc.get("texto_rag", "")
-            if texto_precalculado:
-                contexto_final += f"✅ {texto_precalculado}\n\n"
-
-        print(f"✅ [RAG LOG] Contexto final enviado al LLM ({len(contexto_final)} caracteres).")
-        return contexto_final
+        logger.debug("Contexto final: %d chars.", len(contexto))
+        return contexto
 
     except Exception as e:
-        print(f"❌ [RAG LOG] ERROR INTERNO: {e}")
-        return f"Error interno al consultar la base documental: {str(e)}"
+        # 🔒 Detalle al log, mensaje neutro al LLM. Antes devolvías str(e) → leak de
+        #    errores de Mongo/Pinecone (fragmentos de URI, hosts, paths) vía el modelo.
+        logger.warning("consultar_estudios_mercado falló: %s", e)
+        return "No se pudo consultar la base documental en este momento."
