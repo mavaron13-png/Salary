@@ -80,7 +80,7 @@ tools = [consultar_modelo_salarial, consultar_estudios_mercado]
 
 # 🔒 'prompt=' inyecta el system prompt al agente. Verifica el nombre del parámetro
 #    para tu versión de langchain (algunas usan 'prompt', otras 'state_modifier').
-agente_laboral = create_agent(llm, tools, prompt=SYSTEM_PROMPT)
+agente_laboral = create_agent(llm, tools, system_prompt=SYSTEM_PROMPT)
 logger.info("Agente ReAct construido con guardrails aplicados.")
 
 
