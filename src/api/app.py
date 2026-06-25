@@ -26,12 +26,25 @@ app = FastAPI(title="API Calculadora de Remuneración IA", docs_url=None, redoc_
 
 class SecurityHeaders(BaseHTTPMiddleware):
     """Añade headers defensivos a cada respuesta. Cero costo, cierra varios huecos."""
+
     async def dispatch(self, request, call_next):
         resp = await call_next(request)
-        resp.headers["X-Frame-Options"] = "DENY"
+        # 🔒 X-Frame-Options ELIMINADO: es binario (DENY/SAMEORIGIN), no acepta HF.
+        #    frame-ancestors del CSP lo reemplaza y permite embeber solo desde HF.
         resp.headers["X-Content-Type-Options"] = "nosniff"
         resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        resp.headers["Content-Security-Policy"] = "default-src 'self'"
+        resp.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "frame-ancestors 'self' https://*.hf.space https://huggingface.co; "
+            # React desde unpkg + handlers inline. 'unsafe-eval' por si React UMD lo pide.
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; "
+            # Estilos inline (React) + Google Fonts CSS
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "img-src 'self' data: https:; "
+            "connect-src 'self'"
+        )
         resp.headers["Referrer-Policy"] = "no-referrer"
         return resp
 
