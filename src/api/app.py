@@ -215,6 +215,17 @@ async def calcular_dual(datos: DatosInferencia):
         logger.warning(f"XGBoost: {e}")          # 🔒 no exponemos el traceback
         resultado["xgboost"]["error"] = "No se pudo calcular la estimación matemática."
         salario_pred = 0
+    except Exception as e:
+        logger.warning("RAG estructurado: %s", e)
+        # 🔒 NO inventar cifras. Si el RAG falla, decirlo claro, no fabricar un benchmark.
+        resultado["rag"] = {
+            "cargo_top1": cargo_usuario,
+            "retrievals": [],
+            "valor_conservador": None,
+            "nota": "⚠️ Benchmark de mercado no disponible en este momento. "
+                    "La estimación mostrada proviene únicamente del modelo estadístico.",
+            "disponible": False,
+        }
 
     # 2. RAG Agéntico con Mapeo Estructurado
     # 🔒 cargo_usuario sanitizado: es el vector más peligroso porque va a un agente CON tools.
