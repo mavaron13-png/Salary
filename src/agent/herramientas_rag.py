@@ -1,7 +1,7 @@
 import os
 import json          # 🔒 FALTABA: sin esto, el primer chunk tipo "tabla" hacía NameError → crash
 import logging
-import certify
+import certifi
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from pinecone import Pinecone
