@@ -76,7 +76,7 @@
           <input id="pdf-upload" type="file" accept="application/pdf" onChange="{{ h.onFile }}" style="display:none;">
 
           <sc-if value="{{ upIdle }}" hint-placeholder-val="{{ true }}">
-          <div onClick="{{ h.pick }}" style="border:1.5px dashed rgba(255,255,255,.16); border-radius:16px; padding:46px 24px; text-align:center; cursor:pointer; transition:.2s; background:radial-gradient(420px 200px at 50% 0%, rgba(255,255,255,.03), transparent);" style-hover="border-color:var(--accent);background:rgba(255,255,255,.04);">
+          <div style="border:1.5px dashed rgba(255,255,255,.16); border-radius:16px; padding:46px 24px; text-align:center; cursor:pointer; transition:.2s; background:radial-gradient(420px 200px at 50% 0%, rgba(255,255,255,.03), transparent);" style-hover="border-color:var(--accent);background:rgba(255,255,255,.04);">
             <div style="width:64px;height:64px;border-radius:18px;margin:0 auto 18px;background:var(--grad);display:grid;place-items:center;box-shadow:0 16px 36px -12px var(--glow);animation:floaty 4s ease-in-out infinite;">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 16v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3"/></svg>
             </div>
@@ -131,8 +131,7 @@
               <span style="font-size:13.5px;font-weight:600;color:#a7f3d0;">Perfil extraído y validado con éxito</span>
             </div>
             <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
-              <button onClick="{{ h.goReview }}" style="flex:1;min-width:200px;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:14px 20px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:0 12px 30px -10px var(--glow);transition:transform .15s;" style-hover="transform:translateY(-2px);">Revisar datos extraídos →</button>
-              <button onClick="{{ h.autocomplete }}" style="background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:14px 20px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:.15s;" style-hover="background:rgba(255,255,255,.09);">✨ Autocompletar mi perfil</button>
+              <button onClick="{{ h.goReview }}" style="flex:1;min-width:200px;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:14px 20px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:0 12px 30px -10px var(--glow);transition:transform .15s;" style-hover="transform:translateY(-2px);">✨ Autocompletar mi perfil</button>
             </div>
           </div>
           </sc-if>
@@ -617,7 +616,6 @@ class Component extends DCLogic {
     // mockExtractProfile -> LLM extraction validated against Mongo schema
     this.after(1900, () => this.setState({ up: 'extracted', profile: { ...this.EXAMPLE } }));
   };
-  autocomplete = () => this.setState({ profile: { ...this.EXAMPLE }, up: 'extracted', scene: 'review' });
   goReview = () => this.setState(s => ({ scene: 'review', profile: s.profile || { ...this.EXAMPLE } }));
   setField = (k, v) => this.setState(s => ({ profile: { ...s.profile, [k]: v } }));
 
