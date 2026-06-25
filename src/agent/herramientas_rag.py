@@ -1,11 +1,14 @@
 import os
 import json          # 🔒 FALTABA: sin esto, el primer chunk tipo "tabla" hacía NameError → crash
 import logging
+import certify
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from pinecone import Pinecone
 from openai import OpenAI
 from langchain_core.tools import tool
+
+
 
 load_dotenv()
 logger = logging.getLogger("sueldo.rag")
@@ -18,7 +21,11 @@ pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 pinecone_index = pc.Index("salary-rag-index")
 
 logger.info("Conectando a MongoDB...")
-mongo_client = MongoClient(os.getenv("MONGO_URI"))
+mongo_client = MongoClient(
+    os.getenv("MONGO_URI"),
+    tlsCAFile=certifi.where(),
+    serverSelectionTimeoutMS=5000,   # 🔧 baja de 20s: falla rápido, no cuelga la UI
+)
 db = mongo_client["mercado_laboral_db"]
 coleccion_exacta = db["registros_completos"]
 
