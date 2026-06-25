@@ -1,3 +1,5 @@
+Pruébalo aqui: https://huggingface.co/spaces/mavaron/Sueldo
+
 # 📊 Calculadora de Remuneración Profesional - IA Dual
 
 Un sistema end-to-end impulsado por Inteligencia Artificial diseñado para estimar la compensación salarial en el mercado laboral colombiano. El proyecto implementa una arquitectura de **IA Dual**, cruzando predicciones estadísticas de Machine Learning (XGBoost) con datos ejecutivos extraídos de estudios oficiales de mercado a través de un pipeline RAG Agentico.
