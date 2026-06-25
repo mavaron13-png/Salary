@@ -23,8 +23,9 @@ pinecone_index = pc.Index("salary-rag-index")
 logger.info("Conectando a MongoDB...")
 mongo_client = MongoClient(
     os.getenv("MONGO_URI"),
+    tls=True,
     tlsCAFile=certifi.where(),
-    serverSelectionTimeoutMS=5000,   # 🔧 baja de 20s: falla rápido, no cuelga la UI
+    serverSelectionTimeoutMS=5000,
 )
 db = mongo_client["mercado_laboral_db"]
 coleccion_exacta = db["registros_completos"]
